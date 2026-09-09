@@ -7,6 +7,7 @@ import { RecordIndexSkeletonLoader } from '@/object-record/record-index/componen
 import { PageContainer } from '@/ui/layout/page/components/PageContainer';
 import { useAtomComponentStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomComponentStateValue';
 import { isUndefined } from '@sniptt/guards';
+import { ReportsPage } from '~/pages/dashboards/DashboardsPage';
 
 export const RecordIndexPage = () => {
   const contextStoreCurrentObjectMetadataItemId = useAtomComponentStateValue(
@@ -27,6 +28,14 @@ export const RecordIndexPage = () => {
 
   if (isUndefined(objectMetadataItem)) {
     return <RecordIndexSkeletonLoader />;
+  }
+
+  if (objectMetadataItem.namePlural === 'dashboards') {
+    return (
+      <PageContainer>
+        <ReportsPage />
+      </PageContainer>
+    );
   }
 
   return (

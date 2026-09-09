@@ -207,7 +207,8 @@ export const usePageChangeEffectNavigateLocation = () => {
   if (
     isMinimalMetadataReady &&
     isMatchingLocation(location, AppPath.RecordIndexPage) &&
-    !isDefined(objectMetadataItem)
+    !isDefined(objectMetadataItem) &&
+    !location.pathname.startsWith('/objects/dashboards')
   ) {
     return AppPath.NotFound;
   }

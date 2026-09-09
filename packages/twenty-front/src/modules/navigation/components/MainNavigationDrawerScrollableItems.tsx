@@ -1,41 +1,98 @@
-import { NavigationDrawerOpenedSection } from '@/navigation-menu-item/display/sections/components/NavigationDrawerOpenedSection';
-import { NavigationDrawerWorkspaceSectionSkeletonLoader } from '@/object-metadata/components/NavigationDrawerWorkspaceSectionSkeletonLoader';
-
 import { styled } from '@linaria/react';
-import { lazy, Suspense } from 'react';
-
+import { useLocation } from 'react-router-dom';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
+import { NotificationCounter } from 'twenty-ui/data-display';
+import {
+  IconLayoutDashboard,
+  IconCheckbox,
+  IconTarget,
+  IconBriefcase,
+  IconSun,
+  IconTag,
+  IconInbox,
+  IconTool,
+  IconCheck,
+  IconBolt,
+  IconChartBar,
+  IconSettings
+} from 'twenty-ui/icon';
 
-const FavoritesSectionDispatcher = lazy(() =>
-  import('@/navigation-menu-item/display/sections/favorites/components/FavoritesSectionDispatcher').then(
-    (module) => ({
-      default: module.FavoritesSectionDispatcher,
-    }),
-  ),
-);
-
-const WorkspaceSectionDispatcher = lazy(() =>
-  import('@/navigation-menu-item/display/sections/workspace/components/WorkspaceSectionDispatcher').then(
-    (module) => ({
-      default: module.WorkspaceSectionDispatcher,
-    }),
-  ),
-);
+import { NavigationDrawerSection } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerSection';
+import { NavigationDrawerSectionTitle } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerSectionTitle';
+import { NavigationDrawerItem } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerItem';
 
 const StyledScrollableItemsContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${themeCssVariables.spacing[3]};
+  height: 100%;
+`;
+
+const StyledFooter = styled.div`
+  margin-top: auto;
+  padding: ${themeCssVariables.spacing[4]} ${themeCssVariables.spacing[4]};
+  display: flex;
+  flex-direction: column;
+  gap: ${themeCssVariables.spacing[1]};
+  font-size: ${themeCssVariables.font.size.sm};
+  color: ${themeCssVariables.font.color.light};
+`;
+
+const FooterTitle = styled.div`
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  color: ${themeCssVariables.font.color.primary};
+`;
+
+const FooterStatus = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${themeCssVariables.spacing[1]};
+`;
+
+const StatusDot = styled.div`
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10b981;
 `;
 
 export const MainNavigationDrawerScrollableItems = () => {
+  const { pathname } = useLocation();
+
   return (
     <StyledScrollableItemsContainer>
-      <NavigationDrawerOpenedSection />
-      <Suspense fallback={<NavigationDrawerWorkspaceSectionSkeletonLoader />}>
-        <FavoritesSectionDispatcher />
-        <WorkspaceSectionDispatcher />
-      </Suspense>
+      <NavigationDrawerSection>
+        <NavigationDrawerSectionTitle label="OVERVIEW" />
+        <NavigationDrawerItem label="Dashboard" Icon={IconLayoutDashboard} to="/" />
+        <NavigationDrawerItem label="My Tasks" Icon={IconCheckbox} to="/objects/tasks" />
+      </NavigationDrawerSection>
+
+      <NavigationDrawerSection>
+        <NavigationDrawerSectionTitle label="SALES" />
+        <NavigationDrawerItem label="Leads" Icon={IconTarget} to="/objects/leads" />
+        <NavigationDrawerItem label="Deals" Icon={IconBriefcase} to="/objects/deals" />
+        <NavigationDrawerItem label="Customers" Icon={IconSun} to="/objects/companies" />
+      </NavigationDrawerSection>
+
+      <NavigationDrawerSection>
+        <NavigationDrawerSectionTitle label="SERVICE" />
+        <NavigationDrawerItem label="Tickets" Icon={IconTag} to="/objects/tickets" rightOptions={<NotificationCounter count={4} variant="primary" />} alwaysShowRightOptions />
+        <NavigationDrawerItem label="Inbox" Icon={IconInbox} to="/inbox" rightOptions={<NotificationCounter count={12} variant="primary" />} alwaysShowRightOptions />
+        <NavigationDrawerItem label="Field Service" Icon={IconTool} to="/objects/field-services" />
+      </NavigationDrawerSection>
+
+      <NavigationDrawerSection>
+        <NavigationDrawerSectionTitle label="OPERATIONS" />
+        <NavigationDrawerItem label="Approvals" Icon={IconCheck} to="/approvals" rightOptions={<NotificationCounter count={3} variant="primary" />} alwaysShowRightOptions />
+        <NavigationDrawerItem label="Automations" Icon={IconBolt} to="/automations" />
+        <NavigationDrawerItem label="Reports" Icon={IconChartBar} to="/objects/dashboards" active={pathname.startsWith('/objects/dashboards')} />
+        <NavigationDrawerItem label="Administration" Icon={IconSettings} to="/settings" />
+      </NavigationDrawerSection>
+
+      <StyledFooter>
+        <FooterTitle>Century Ply CX v1.0</FooterTitle>
+        <FooterStatus>All systems operational <StatusDot /></FooterStatus>
+      </StyledFooter>
     </StyledScrollableItemsContainer>
   );
 };
