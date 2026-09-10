@@ -58,6 +58,12 @@ const SignInUp = lazy(() =>
   })),
 );
 
+const TicketsPage = lazy(() =>
+  import('~/pages/tickets/TicketsPage').then((module) => ({
+    default: module.TicketsPage,
+  })),
+);
+
 const PasswordReset = lazy(() =>
   import('~/pages/auth/PasswordReset').then((module) => ({
     default: module.PasswordReset,
@@ -189,6 +195,14 @@ const createWorkspaceAppRouter = ({
                 element={
                   <LazyRoute fallback={<RecordIndexSkeletonLoader />}>
                     <DashboardsPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/objects/tickets"
+                element={
+                  <LazyRoute fallback={<RecordIndexSkeletonLoader />}>
+                    <TicketsPage />
                   </LazyRoute>
                 }
               />
