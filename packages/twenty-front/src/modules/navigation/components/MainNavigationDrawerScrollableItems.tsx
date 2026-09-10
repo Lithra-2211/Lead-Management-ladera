@@ -76,7 +76,7 @@ export const MainNavigationDrawerScrollableItems = () => {
 
       <NavigationDrawerSection>
         <NavigationDrawerSectionTitle label="SERVICE" />
-        <NavigationDrawerItem label="Tickets" Icon={IconTag} to="/tickets" rightOptions={<NotificationCounter count={4} variant="primary" />} alwaysShowRightOptions />
+        <NavigationDrawerItem label="Tickets" Icon={IconTag} to="/objects/tickets" rightOptions={<NotificationCounter count={4} variant="primary" />} alwaysShowRightOptions />
         <NavigationDrawerItem label="Inbox" Icon={IconInbox} to="/inbox" rightOptions={<NotificationCounter count={12} variant="primary" />} alwaysShowRightOptions />
         <NavigationDrawerItem label="Field Service" Icon={IconTool} to="/field-services" />
       </NavigationDrawerSection>
