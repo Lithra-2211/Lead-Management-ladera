@@ -32,9 +32,12 @@ const SearchInputWrapper = styled.div`
   position: relative;
   display: flex;
   align-items: center;
+  flex: 1;
+  max-width: 600px;
+  margin-left: 16px;
 `;
 
-const SearchIcon = styled.div`
+const SearchIcon = styled.span`
   position: absolute;
   left: 12px;
   color: ${themeCssVariables.font.color.tertiary};
@@ -46,7 +49,7 @@ const SearchInput = styled.input`
   border-radius: 20px;
   border: 1px solid ${themeCssVariables.border.color.medium};
   font-size: 13px;
-  width: 320px;
+  width: 100%;
   outline: none;
   background: white;
   transition: border-color 0.2s ease;
@@ -479,13 +482,12 @@ const customerSchema = z.object({
   address: z.string(),
   city: z.string().min(1, "City is required"),
   state: z.string(),
+  country: z.string(),
   pincode: z.string(),
-  dealerCode: z.string(),
   source: z.string(),
   segment: z.string(),
   region: z.string(),
   potential: z.string(),
-  notes: z.string(),
 });
 
 type CustomerFormValues = z.infer<typeof customerSchema>;
@@ -536,12 +538,12 @@ export const CustomersPage = () => {
     if (customer) {
       setEditingCustomer(customer);
       reset({
-        type: customer.type, name: customer.name, mobile: customer.mobile, email: customer.email, address: customer.address, city: customer.city, state: customer.state, pincode: customer.pincode, dealerCode: customer.dealerCode || '', source: customer.source, segment: customer.segment, region: customer.region, potential: customer.potential, notes: customer.notes
+        type: customer.type, name: customer.name, mobile: customer.mobile, email: customer.email, address: customer.address, city: customer.city, state: customer.state, country: 'India', pincode: customer.pincode, source: customer.source, segment: customer.segment, region: customer.region, potential: customer.potential
       });
     } else {
       setEditingCustomer(null);
       reset({
-        type: 'Customer', name: '', mobile: '', email: '', address: '', city: '', state: '', pincode: '', dealerCode: '', source: 'Website', segment: 'Retail', region: 'South', potential: 'Medium', notes: ''
+        type: 'Customer', name: '', mobile: '', email: '', address: '', city: '', state: '', country: 'India', pincode: '', source: 'Website', segment: 'Retail', region: 'South', potential: 'Medium'
       });
     }
     setIsDrawerOpen(true);
@@ -553,12 +555,15 @@ export const CustomersPage = () => {
 
   const onSubmit = (data: CustomerFormValues) => {
     setSubmitError('');
+    const { country, ...rest } = data;
+    const dbData = { ...rest, dealerCode: '', notes: '' };
+
     if (editingCustomer) {
-      updateCustomer(editingCustomer.id, data);
+      updateCustomer(editingCustomer.id, dbData);
       closeDrawer();
       showToast('Customer updated successfully');
     } else {
-      const res = addCustomer(data);
+      const res = addCustomer(dbData);
       if (res.success) {
         closeDrawer();
         showToast('Customer added successfully');
@@ -732,10 +737,62 @@ export const CustomersPage = () => {
                     {errors.email && <ErrorText>{errors.email.message}</ErrorText>}
                   </FormGroup>
 
-                  <FormGroup>
-                    <Label>Dealer/Distributor Code</Label>
-                    <Input {...register('dealerCode')} placeholder="e.g. D-101" />
-                  </FormGroup>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <FormGroup>
+                      <Label>Country</Label>
+                      <Select {...register('country')}>
+                        <option value="India">India</option>
+                        <option value="United States">United States</option>
+                        <option value="United Kingdom">United Kingdom</option>
+                        <option value="Canada">Canada</option>
+                        <option value="Australia">Australia</option>
+                        <option value="Singapore">Singapore</option>
+                        <option value="United Arab Emirates">United Arab Emirates</option>
+                      </Select>
+                    </FormGroup>
+                    <FormGroup>
+                      <Label>State</Label>
+                      <Select {...register('state')}>
+                        <option value="">Select State</option>
+                        <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                        <option value="Andhra Pradesh">Andhra Pradesh</option>
+                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                        <option value="Assam">Assam</option>
+                        <option value="Bihar">Bihar</option>
+                        <option value="Chandigarh">Chandigarh</option>
+                        <option value="Chhattisgarh">Chhattisgarh</option>
+                        <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+                        <option value="Delhi">Delhi</option>
+                        <option value="Goa">Goa</option>
+                        <option value="Gujarat">Gujarat</option>
+                        <option value="Haryana">Haryana</option>
+                        <option value="Himachal Pradesh">Himachal Pradesh</option>
+                        <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                        <option value="Jharkhand">Jharkhand</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Kerala">Kerala</option>
+                        <option value="Ladakh">Ladakh</option>
+                        <option value="Lakshadweep">Lakshadweep</option>
+                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Manipur">Manipur</option>
+                        <option value="Meghalaya">Meghalaya</option>
+                        <option value="Mizoram">Mizoram</option>
+                        <option value="Nagaland">Nagaland</option>
+                        <option value="Odisha">Odisha</option>
+                        <option value="Puducherry">Puducherry</option>
+                        <option value="Punjab">Punjab</option>
+                        <option value="Rajasthan">Rajasthan</option>
+                        <option value="Sikkim">Sikkim</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="Telangana">Telangana</option>
+                        <option value="Tripura">Tripura</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Uttarakhand">Uttarakhand</option>
+                        <option value="West Bengal">West Bengal</option>
+                      </Select>
+                    </FormGroup>
+                  </div>
 
                   <FormGroup>
                     <Label>City *</Label>
@@ -745,19 +802,14 @@ export const CustomersPage = () => {
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <FormGroup>
-                      <Label>State</Label>
-                      <Input {...register('state')} />
+                      <Label>Address</Label>
+                      <Input {...register('address')} />
                     </FormGroup>
                     <FormGroup>
                       <Label>Pincode</Label>
                       <Input {...register('pincode')} />
                     </FormGroup>
                   </div>
-
-                  <FormGroup>
-                    <Label>Address</Label>
-                    <Input {...register('address')} />
-                  </FormGroup>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <FormGroup>
@@ -802,16 +854,11 @@ export const CustomersPage = () => {
                     </FormGroup>
                   </div>
 
-                  <FormGroup>
-                    <Label>Notes</Label>
-                    <textarea {...register('notes')} style={{ padding: '10px', borderRadius: '8px', border: `1px solid ${themeCssVariables.border.color.medium}`, outline: 'none', fontSize: '13px', fontFamily: 'inherit' }} rows={3}></textarea>
-                  </FormGroup>
-
                 </form>
               </DrawerBody>
               <DrawerFooter>
                 <Button type="button" onClick={closeDrawer}>Cancel</Button>
-                <Button primary type="submit" form="customer-form">Save Customer</Button>
+                <Button primary type="submit" form="customer-form">Create Customer</Button>
               </DrawerFooter>
             </DrawerContent>
           </DrawerOverlay>

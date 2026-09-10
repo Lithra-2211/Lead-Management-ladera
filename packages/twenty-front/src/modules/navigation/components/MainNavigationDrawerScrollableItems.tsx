@@ -63,7 +63,7 @@ export const MainNavigationDrawerScrollableItems = () => {
     <StyledScrollableItemsContainer>
       <NavigationDrawerSection>
         <NavigationDrawerSectionTitle label="OVERVIEW" />
-        <NavigationDrawerItem label="Dashboard" Icon={IconLayoutDashboard} to="/" />
+        <NavigationDrawerItem label="Dashboard" Icon={IconLayoutDashboard} to="/objects/dashboards" />
         <NavigationDrawerItem label="My Tasks" Icon={IconCheckbox} to="/objects/tasks" />
       </NavigationDrawerSection>
 

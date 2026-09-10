@@ -37,12 +37,6 @@ const WorkflowCoreIndexPage = lazy(() =>
   })),
 );
 
-const DashboardsPage = lazy(() =>
-  import('~/pages/dashboards/DashboardsPage').then((module) => ({
-    default: module.ReportsPage,
-  })),
-);
-
 const RecordIndexPage = lazy(() =>
   import('~/pages/object-record/RecordIndexPage').then((module) => ({
     default: module.RecordIndexPage,
@@ -200,14 +194,6 @@ const createWorkspaceAppRouter = ({
                   }
                 />
               )}
-              <Route
-                path="/objects/dashboards"
-                element={
-                  <LazyRoute fallback={<RecordIndexSkeletonLoader />}>
-                    <DashboardsPage />
-                  </LazyRoute>
-                }
-              />
               <Route
                 path="/objects/tickets"
                 element={

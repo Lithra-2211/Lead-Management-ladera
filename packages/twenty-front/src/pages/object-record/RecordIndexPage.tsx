@@ -10,7 +10,13 @@ import { isUndefined } from '@sniptt/guards';
 import { ReportsPage } from '~/pages/dashboards/DashboardsPage';
 import { CustomersPage } from '~/pages/customers/CustomersPage';
 
+import { useSearchParams } from 'react-router-dom';
+import { PageTitle } from '@/ui/utilities/page-title/components/PageTitle';
+import { IconLayoutDashboard } from 'twenty-ui/icon';
+import { PageWrapper, ContentContainer, IconWrapper, Title, Subtitle } from '@/app/components/SettingsRoutes';
+
 export const RecordIndexPage = () => {
+  const [searchParams] = useSearchParams();
   const contextStoreCurrentObjectMetadataItemId = useAtomComponentStateValue(
     contextStoreCurrentObjectMetadataItemIdComponentState,
     MAIN_CONTEXT_STORE_INSTANCE_ID,
@@ -34,7 +40,16 @@ export const RecordIndexPage = () => {
   if (objectMetadataItem.namePlural === 'dashboards') {
     return (
       <PageContainer>
-        <ReportsPage />
+        <PageTitle title="Dashboard" />
+        <PageWrapper>
+          <ContentContainer>
+            <IconWrapper>
+              <IconLayoutDashboard />
+            </IconWrapper>
+            <Title>Dashboard - Under Construction</Title>
+            <Subtitle>Dashboard analytics and reporting features are currently being developed. Please check back later.</Subtitle>
+          </ContentContainer>
+        </PageWrapper>
       </PageContainer>
     );
   }

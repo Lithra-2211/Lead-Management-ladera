@@ -4,7 +4,7 @@ import { themeCssVariables } from 'twenty-ui/theme-constants';
 import { PageTitle } from '@/ui/utilities/page-title/components/PageTitle';
 import { IconSettings } from 'twenty-ui/icon';
 
-const PageWrapper = styled.div`
+export const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -14,7 +14,7 @@ const PageWrapper = styled.div`
   justify-content: center;
 `;
 
-const ContentContainer = styled.div`
+export const ContentContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -23,7 +23,7 @@ const ContentContainer = styled.div`
   max-width: 500px;
 `;
 
-const IconWrapper = styled.div`
+export const IconWrapper = styled.div`
   width: 64px;
   height: 64px;
   border-radius: 50%;
@@ -41,14 +41,14 @@ const IconWrapper = styled.div`
   }
 `;
 
-const Title = styled.h1`
+export const Title = styled.h1`
   margin: 0 0 12px 0;
   font-size: 20px;
   font-weight: 600;
   color: ${themeCssVariables.font.color.primary};
 `;
 
-const Subtitle = styled.p`
+export const Subtitle = styled.p`
   margin: 0;
   font-size: 14px;
   color: ${themeCssVariables.font.color.secondary};
