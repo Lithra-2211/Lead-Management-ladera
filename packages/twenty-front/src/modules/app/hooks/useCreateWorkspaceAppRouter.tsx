@@ -1,4 +1,7 @@
 import { lazy, useMemo } from 'react';
+import { PlaceholderPage } from '~/pages/mock/PlaceholderPage';
+import { CustomerDataProvider } from '~/pages/customers/context/CustomerDataContext';
+import { Customer360Page } from '~/pages/customers/Customer360Page';
 
 import {
   createBrowserRouter,
@@ -179,7 +182,14 @@ const createWorkspaceAppRouter = ({
       >
         <Route element={<MinimalMetadataGate />}>
           <Route element={<DefaultLayout />}>
-            <Route element={<MainAppLayoutWithSidePanel />}>
+            <Route element={<CustomerDataProvider><MainAppLayoutWithSidePanel /></CustomerDataProvider>}>
+              <Route path="/customers/:id" element={<LazyRoute><Customer360Page /></LazyRoute>} />
+              <Route path="/tickets" element={<LazyRoute><PlaceholderPage title="Tickets" /></LazyRoute>} />
+              <Route path="/inbox" element={<LazyRoute><PlaceholderPage title="Inbox" /></LazyRoute>} />
+              <Route path="/field-services" element={<LazyRoute><PlaceholderPage title="Field Service" /></LazyRoute>} />
+              <Route path="/approvals" element={<LazyRoute><PlaceholderPage title="Approvals" /></LazyRoute>} />
+              <Route path="/automations" element={<LazyRoute><PlaceholderPage title="Automations" /></LazyRoute>} />
+              
               {isWorkflowCoreIndexPageEnabled && (
                 <Route
                   path={AppPath.WorkflowCoreIndexPage}

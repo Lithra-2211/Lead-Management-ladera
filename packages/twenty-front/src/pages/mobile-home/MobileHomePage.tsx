@@ -1,55 +1,73 @@
-import { MobileHomeAiChatSection } from '@/ai/components/MobileHomeAiChatSection';
-import { MainNavigationDrawerNavigationContent } from '@/navigation/components/MainNavigationDrawerNavigationContent';
-import { useDefaultHomePagePath } from '@/navigation/hooks/useDefaultHomePagePath';
-import { useHasPermissionFlag } from '@/settings/roles/hooks/useHasPermissionFlag';
-import { MultiWorkspaceDropdownButton } from '@/ui/navigation/navigation-drawer/components/MultiWorkspaceDropdown/MultiWorkspaceDropdownButton';
-import { NavigationDrawerFixedContent } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerFixedContent';
-import { NavigationDrawerScrollableContent } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerScrollableContent';
-import { useIsMobile } from '@/ui/utilities/responsive/hooks/useIsMobile';
+import React from 'react';
 import { styled } from '@linaria/react';
-import { Navigate } from 'react-router-dom';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
-import { PermissionFlagType } from '~/generated-metadata/graphql';
+import { PageTitle } from '@/ui/utilities/page-title/components/PageTitle';
+import { IconLayoutDashboard } from 'twenty-ui/icon';
 
-const StyledContainer = styled.div`
-  box-sizing: border-box;
+const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${themeCssVariables.spacing[4]};
   height: 100%;
-  min-height: 0;
-  padding: ${themeCssVariables.spacing[2]} 0 ${themeCssVariables.spacing[4]};
   width: 100%;
+  background-color: ${themeCssVariables.background.primary};
+  align-items: center;
+  justify-content: center;
 `;
 
-const StyledSections = styled.div`
+const ContentContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${themeCssVariables.spacing[3]};
+  align-items: center;
+  text-align: center;
+  padding: 32px;
+  max-width: 500px;
+`;
+
+const IconWrapper = styled.div`
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: ${themeCssVariables.background.secondary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  color: ${themeCssVariables.font.color.tertiary};
+
+  svg {
+    width: 32px;
+    height: 32px;
+    stroke-width: 1.5;
+  }
+`;
+
+const Title = styled.h1`
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: ${themeCssVariables.font.color.primary};
+`;
+
+const Subtitle = styled.p`
+  margin: 0;
+  font-size: 14px;
+  color: ${themeCssVariables.font.color.secondary};
+  line-height: 1.5;
 `;
 
 export const MobileHomePage = () => {
-  const isMobile = useIsMobile();
-  const { defaultHomePagePath } = useDefaultHomePagePath();
-  const hasAiPermission = useHasPermissionFlag(PermissionFlagType.AI);
-
-  // Desktop keeps the drawer, so the page has nothing to show there.
-  if (!isMobile) {
-    return <Navigate to={defaultHomePagePath} replace />;
-  }
-
   return (
-    <StyledContainer>
-      <NavigationDrawerFixedContent>
-        <MultiWorkspaceDropdownButton />
-      </NavigationDrawerFixedContent>
-
-      <NavigationDrawerScrollableContent>
-        <StyledSections>
-          <MainNavigationDrawerNavigationContent />
-          {hasAiPermission && <MobileHomeAiChatSection />}
-        </StyledSections>
-      </NavigationDrawerScrollableContent>
-    </StyledContainer>
+    <>
+      <PageTitle title="Dashboard" />
+      <PageWrapper>
+        <ContentContainer>
+          <IconWrapper>
+            <IconLayoutDashboard />
+          </IconWrapper>
+          <Title>Dashboard - Under Construction</Title>
+          <Subtitle>We're actively building a powerful new dashboard experience. Please check back later.</Subtitle>
+        </ContentContainer>
+      </PageWrapper>
+    </>
   );
 };

@@ -69,16 +69,16 @@ export const MainNavigationDrawerScrollableItems = () => {
 
       <NavigationDrawerSection>
         <NavigationDrawerSectionTitle label="SALES" />
-        <NavigationDrawerItem label="Leads" Icon={IconTarget} to="/objects/leads" />
-        <NavigationDrawerItem label="Deals" Icon={IconBriefcase} to="/objects/deals" />
+        <NavigationDrawerItem label="Leads" Icon={IconTarget} to="/objects/people" />
+        <NavigationDrawerItem label="Deals" Icon={IconBriefcase} to="/objects/opportunities" />
         <NavigationDrawerItem label="Customers" Icon={IconSun} to="/objects/companies" />
       </NavigationDrawerSection>
 
       <NavigationDrawerSection>
         <NavigationDrawerSectionTitle label="SERVICE" />
-        <NavigationDrawerItem label="Tickets" Icon={IconTag} to="/objects/tickets" rightOptions={<NotificationCounter count={4} variant="primary" />} alwaysShowRightOptions />
+        <NavigationDrawerItem label="Tickets" Icon={IconTag} to="/tickets" rightOptions={<NotificationCounter count={4} variant="primary" />} alwaysShowRightOptions />
         <NavigationDrawerItem label="Inbox" Icon={IconInbox} to="/inbox" rightOptions={<NotificationCounter count={12} variant="primary" />} alwaysShowRightOptions />
-        <NavigationDrawerItem label="Field Service" Icon={IconTool} to="/objects/field-services" />
+        <NavigationDrawerItem label="Field Service" Icon={IconTool} to="/field-services" />
       </NavigationDrawerSection>
 
       <NavigationDrawerSection>

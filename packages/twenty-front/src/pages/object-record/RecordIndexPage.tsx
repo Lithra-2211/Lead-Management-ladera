@@ -8,6 +8,7 @@ import { PageContainer } from '@/ui/layout/page/components/PageContainer';
 import { useAtomComponentStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomComponentStateValue';
 import { isUndefined } from '@sniptt/guards';
 import { ReportsPage } from '~/pages/dashboards/DashboardsPage';
+import { CustomersPage } from '~/pages/customers/CustomersPage';
 
 export const RecordIndexPage = () => {
   const contextStoreCurrentObjectMetadataItemId = useAtomComponentStateValue(
@@ -34,6 +35,14 @@ export const RecordIndexPage = () => {
     return (
       <PageContainer>
         <ReportsPage />
+      </PageContainer>
+    );
+  }
+
+  if (objectMetadataItem.namePlural === 'companies') {
+    return (
+      <PageContainer>
+        <CustomersPage />
       </PageContainer>
     );
   }
