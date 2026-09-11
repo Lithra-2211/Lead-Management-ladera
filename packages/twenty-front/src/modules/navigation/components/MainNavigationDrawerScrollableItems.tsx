@@ -69,8 +69,8 @@ export const MainNavigationDrawerScrollableItems = () => {
 
       <NavigationDrawerSection>
         <NavigationDrawerSectionTitle label="SALES" />
-        <NavigationDrawerItem label="Leads" Icon={IconTarget} to="/objects/people" />
-        <NavigationDrawerItem label="Deals" Icon={IconBriefcase} to="/objects/opportunities" />
+        <NavigationDrawerItem label="Leads" Icon={IconTarget} to="/objects/leads" active={pathname.startsWith('/objects/leads')} />
+        <NavigationDrawerItem label="Deals" Icon={IconBriefcase} to="/objects/deals" />
         <NavigationDrawerItem label="Customers" Icon={IconSun} to="/objects/companies" />
       </NavigationDrawerSection>
 

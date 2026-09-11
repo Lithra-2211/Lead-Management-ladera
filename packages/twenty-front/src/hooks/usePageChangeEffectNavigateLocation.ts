@@ -209,7 +209,8 @@ export const usePageChangeEffectNavigateLocation = () => {
     isMatchingLocation(location, AppPath.RecordIndexPage) &&
     !isDefined(objectMetadataItem) &&
     !location.pathname.startsWith('/objects/dashboards') &&
-    !location.pathname.startsWith('/objects/tickets')
+    !location.pathname.startsWith('/objects/tickets') &&
+    !location.pathname.startsWith('/objects/leads')
   ) {
     return AppPath.NotFound;
   }

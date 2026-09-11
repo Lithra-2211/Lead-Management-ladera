@@ -8,12 +8,7 @@ import { PageContainer } from '@/ui/layout/page/components/PageContainer';
 import { useAtomComponentStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomComponentStateValue';
 import { isUndefined } from '@sniptt/guards';
 import { ReportsPage } from '~/pages/dashboards/DashboardsPage';
-import { CustomersPage } from '~/pages/customers/CustomersPage';
-
-import { useSearchParams } from 'react-router-dom';
-import { PageTitle } from '@/ui/utilities/page-title/components/PageTitle';
-import { IconLayoutDashboard } from 'twenty-ui/icon';
-import { PageWrapper, ContentContainer, IconWrapper, Title, Subtitle } from '@/app/components/SettingsRoutes';
+import { LeadsPage } from '~/pages/leads/LeadsPage';
 
 export const RecordIndexPage = () => {
   const [searchParams] = useSearchParams();
@@ -58,6 +53,14 @@ export const RecordIndexPage = () => {
     return (
       <PageContainer>
         <CustomersPage />
+      </PageContainer>
+    );
+  }
+
+  if (objectMetadataItem.namePlural === 'leads') {
+    return (
+      <PageContainer>
+        <LeadsPage />
       </PageContainer>
     );
   }
