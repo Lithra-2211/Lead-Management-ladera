@@ -82,59 +82,64 @@ type StyledItemProps = Pick<
 
 const StyledItem = styled.button<StyledItemProps>`
   align-items: center;
+  position: relative;
   background: ${({ active }) =>
-    active ? '#FDECEC' : 'transparent'};
-  border-left: ${({ active }) =>
-  active ? '3px solid #E45B52' : '3px solid transparent'};
+    active ? 'linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)' : 'transparent'};
+  border-left: none;
   border: ${({ isSelectedInEditMode }) =>
     isSelectedInEditMode
       ? `1px solid ${themeCssVariables.color.blue}`
       : '1px solid transparent'};
-  border-radius: 12px;
+  border-radius: 8px;
   box-sizing: border-box;
   color: ${({ active, isSoon, variant }) => {
     if (variant === 'tertiary') {
       return themeCssVariables.font.color.tertiary;
     }
     if (active === true) {
-      return '#2D3142';
+      return 'white';
     }
     if (isSoon) {
       return themeCssVariables.font.color.light;
     }
-    return themeCssVariables.font.color.secondary;
+    return '#334155'; /* neutral/dark color for normal state */
   }};
+  font-weight: ${({ active }) => (active ? '600' : '500')};
   cursor: ${({ isSoon, isDragging }) =>
     isDragging ? 'grabbing' : isSoon ? 'default' : 'pointer'};
   display: flex;
   font-family: ${themeCssVariables.font.family};
-  font-size: ${themeCssVariables.font.size.md};
-  height: ${themeCssVariables.spacing[7]};
-  margin-top: ${({ indentationLevel }) =>
-    indentationLevel === 2 ? '2px' : '0'};
+  font-size: 13px;
+  height: 36px;
+  margin-top: 2px;
+  margin-bottom: 2px;
   min-width: 0;
-  padding-bottom: ${themeCssVariables.spacing[1]};
-  padding-left: ${themeCssVariables.spacing[1]};
-  padding-right: ${({ hasRightOptions }) =>
-    hasRightOptions
-      ? themeCssVariables.spacing['0.5']
-      : themeCssVariables.spacing[1]};
-  padding-top: ${themeCssVariables.spacing[1]};
+  padding: 0 12px;
   pointer-events: ${({ isSoon }) => (isSoon ? 'none' : 'auto')};
   text-decoration: none;
   user-select: none;
+  transition: all 0.2s ease;
   width: ${({ isNavigationDrawerExpanded, hasRightOptions }) =>
     !isNavigationDrawerExpanded
       ? `calc(${NAVIGATION_DRAWER_COLLAPSED_WIDTH}px - ${themeCssVariables.spacing[6]} + ${themeCssVariables.spacing[1]} + ${hasRightOptions ? themeCssVariables.spacing['0.5'] : themeCssVariables.spacing[1]})`
       : `calc(100% - ${themeCssVariables.spacing['1.5']} + ${themeCssVariables.spacing[1]} + ${hasRightOptions ? themeCssVariables.spacing['0.5'] : themeCssVariables.spacing[1]})`};
 
   &:hover {
-    background: #F8E8E6;
-    color: ${({ variant }) =>
-      variant === 'tertiary'
-        ? themeCssVariables.font.color.tertiary
-        : themeCssVariables.font.color.primary};
+    background: ${({ active }) => (active ? 'linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)' : '#2563EB')};
+    color: white;
   }
+  
+  &:hover svg, &[aria-current="page"] svg {
+    color: white !important;
+    stroke: white !important;
+  }
+
+  ${({ active }) => active && `
+    svg {
+      color: white !important;
+      stroke: white !important;
+    }
+  `}
 
   &:hover .keyboard-shortcuts {
     visibility: visible;
@@ -205,7 +210,7 @@ const StyledIcon = styled.div`
   flex-grow: 0;
   flex-shrink: 0;
   justify-content: center;
-  margin-right: 12px;
+  margin-right: 10px;
 `;
 
 const StyledIconBackgroundTile = styled.div`

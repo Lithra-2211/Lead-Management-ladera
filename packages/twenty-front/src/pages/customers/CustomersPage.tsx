@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { PageTitle } from '@/ui/utilities/page-title/components/PageTitle';
 import { styled } from '@linaria/react';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 import { useCustomerData, CustomerRecord } from './context/CustomerDataContext';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
@@ -22,10 +22,10 @@ const PageWrapper = styled.div`
 const TopGlobalBar = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 12px 32px;
-  background-color: #fafafa;
-  border-bottom: 1px solid transparent;
+  align-items: flex-start;
+  padding: 16px 24px 16px;
+  background-color: transparent;
+  border-bottom: none;
 `;
 
 const SearchInputWrapper = styled.div`
@@ -104,7 +104,7 @@ const Avatar = styled.div`
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: #ef4444; /* matching the SW avatar red color */
+  background-color: #1e3a8a;
   color: white;
   display: flex;
   align-items: center;
@@ -162,8 +162,8 @@ const TitleSection = styled.div`
 const Title = styled.h1`
   margin: 0;
   font-size: 24px;
-  font-weight: 700;
-  color: ${themeCssVariables.font.color.primary};
+  font-weight: 800;
+  color: #1e1b4b;
 `;
 
 const Subtitle = styled.div`
@@ -178,15 +178,15 @@ const HeaderActions = styled.div`
 `;
 
 const Button = styled.button<{ primary?: boolean; danger?: boolean; small?: boolean }>`
-  padding: ${({ small }) => (small ? '6px 12px' : '8px 16px')};
-  border-radius: 20px;
-  font-size: ${({ small }) => (small ? '12px' : '13px')};
+  padding: ${({ small }) => (small ? '4px 8px' : '6px 14px')};
+  border-radius: 8px;
+  font-size: ${({ small }) => (small ? '11px' : '13px')};
   font-weight: 600;
   cursor: pointer;
   border: 1px solid ${({ primary, danger }) => (primary || danger ? 'transparent' : themeCssVariables.border.color.medium)};
-  background-color: ${({ primary, danger }) => (primary ? themeCssVariables.color.red : danger ? '#fee2e2' : 'white')};
+  background-color: ${({ primary, danger }) => (primary ? '#2563eb' : danger ? '#fee2e2' : 'white')};
   color: ${({ primary, danger }) => (primary ? 'white' : danger ? '#ef4444' : themeCssVariables.font.color.primary)};
-  box-shadow: ${({ primary }) => (primary ? '0 4px 12px rgba(239, 68, 68, 0.3)' : '0 1px 2px rgba(0,0,0,0.05)')};
+  box-shadow: ${({ primary }) => (primary ? '0 4px 12px rgba(37, 99, 235, 0.2)' : '0 1px 2px rgba(0,0,0,0.05)')};
   transition: all 0.2s ease;
 
   &:hover {
@@ -197,8 +197,8 @@ const Button = styled.button<{ primary?: boolean; danger?: boolean; small?: bool
 const Grid = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 0 32px 32px;
+  gap: 16px;
+  padding: 0 24px 24px;
   flex: 1;
   overflow-y: auto;
 `;
@@ -213,11 +213,29 @@ const KpiCard = styled.div`
   background: white;
   border-radius: 12px;
   border: 1px solid ${themeCssVariables.border.color.light};
-  padding: 20px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  gap: 4px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(239, 246, 255, 0.8) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+    z-index: 0;
+  }
+  
+  > * {
+    z-index: 1;
+  }
 `;
 
 const IconWrapper = styled.div<{ color: string; bg: string }>`
@@ -235,7 +253,8 @@ const IconWrapper = styled.div<{ color: string; bg: string }>`
 const KpiValue = styled.div`
   font-size: 24px;
   font-weight: 700;
-  color: ${themeCssVariables.font.color.primary};
+  color: #1e293b;
+  margin-top: 8px;
 `;
 
 const KpiLabel = styled.div`
@@ -264,7 +283,7 @@ const MasterHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
+  padding: 12px 16px;
   border-bottom: 1px solid ${themeCssVariables.border.color.light};
 `;
 
@@ -281,6 +300,13 @@ const Table = styled.table`
   box-sizing: border-box;
   border-collapse: collapse;
   min-width: 800px;
+
+  tbody tr {
+    transition: background-color 0.2s ease;
+    &:hover {
+      background-color: #f8fafc;
+    }
+  }
 `;
 
 const Th = styled.th`
@@ -289,16 +315,16 @@ const Th = styled.th`
   font-weight: 600;
   color: ${themeCssVariables.font.color.tertiary};
   text-transform: uppercase;
-  padding: 12px 24px;
+  padding: 10px 16px;
   border-bottom: 1px solid ${themeCssVariables.border.color.light};
   position: sticky;
   top: 0;
-  background: white;
+  background: #f8fafc;
   z-index: 10;
 `;
 
 const Td = styled.td`
-  padding: 12px 24px;
+  padding: 10px 16px;
   font-size: 13px;
   color: ${themeCssVariables.font.color.secondary};
   border-bottom: 1px solid ${themeCssVariables.border.color.light};
@@ -341,34 +367,46 @@ const OpenTicketsText = styled.span<{ count: number }>`
   font-weight: ${({ count }) => (count > 0 ? '600' : '400')};
 `;
 
-const DrawerOverlay = styled.div`
-  position: absolute;
+const ModalOverlay = styled.div`
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.6);
   z-index: 1000;
   display: flex;
-  justify-content: flex-end;
-`;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.2s ease;
 
-const DrawerContent = styled.div`
-  width: 500px;
-  background: white;
-  height: 100%;
-  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  animation: slideIn 0.3s ease;
-
-  @keyframes slideIn {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 `;
 
-const DrawerHeader = styled.div`
+const ModalContent = styled.div`
+  width: 75%;
+  max-width: 900px;
+  background: white;
+  height: 85%;
+  max-height: 800px;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: scaleUp 0.2s ease;
+
+  @keyframes scaleUp {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+`;
+
+const ModalHeader = styled.div`
   padding: 24px;
   border-bottom: 1px solid ${themeCssVariables.border.color.light};
   display: flex;
@@ -376,7 +414,7 @@ const DrawerHeader = styled.div`
   align-items: center;
 `;
 
-const DrawerBody = styled.div`
+const ModalBody = styled.div`
   padding: 24px;
   flex: 1;
   overflow-y: auto;
@@ -385,7 +423,7 @@ const DrawerBody = styled.div`
   gap: 16px;
 `;
 
-const DrawerFooter = styled.div`
+const ModalFooter = styled.div`
   padding: 24px;
   border-top: 1px solid ${themeCssVariables.border.color.light};
   display: flex;
@@ -400,14 +438,14 @@ const FormGroup = styled.div`
 `;
 
 const Label = styled.label`
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   color: ${themeCssVariables.font.color.secondary};
 `;
 
 const Input = styled.input`
-  padding: 10px;
-  border-radius: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
   border: 1px solid ${themeCssVariables.border.color.medium};
   font-size: 13px;
   width: 100%;
@@ -419,9 +457,11 @@ const Input = styled.input`
   }
 `;
 
+
+
 const Select = styled.select`
-  padding: 10px;
-  border-radius: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
   border: 1px solid ${themeCssVariables.border.color.medium};
   font-size: 13px;
   width: 100%;
@@ -432,6 +472,69 @@ const Select = styled.select`
   &:focus {
     border-color: ${themeCssVariables.color.blue};
   }
+`;
+
+const SearchableSelectWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const SearchableDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid ${themeCssVariables.border.color.medium};
+  border-radius: 8px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+`;
+
+const SearchableOption = styled.div`
+  padding: 10px;
+  font-size: 13px;
+  cursor: pointer;
+  &:hover {
+    background: ${themeCssVariables.background.secondary};
+  }
+`;
+
+const AddressGridContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  width: 100%;
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const AddressColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const AddressHeader = styled.span`
+  color: ${themeCssVariables.font.color.secondary};
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+const AddressValue = styled.span`
+  color: ${themeCssVariables.font.color.primary};
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
 `;
 
 const ErrorText = styled.span`
@@ -460,7 +563,7 @@ const Toast = styled.div`
   transform: translateX(-50%);
   background: #10b981;
   color: white;
-  padding: 12px 24px;
+  padding: 10px 16px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
@@ -474,52 +577,222 @@ const Toast = styled.div`
   }
 `;
 
+const locationSchema = z.object({
+  id: z.string().optional(),
+  locationName: z.string().optional().default(""),
+  contactPerson: z.string().optional().default(""),
+  mobileNumber: z.string().optional().default(""),
+  email: z.string().optional().default(""),
+  addressLine: z.string().optional().default(""),
+  city: z.string().optional().default(""),
+  state: z.string().optional().default(""),
+  country: z.string().optional().default(""),
+  pincode: z.string().optional().default("")
+});
+
 const customerSchema = z.object({
-  type: z.enum(['Customer', 'Dealer', 'Distributor', 'Carpenter', 'Influencer']),
-  name: z.string().min(1, "Customer Name is required"),
+  type: z.enum(['Customer', 'Dealer', 'Carpenter']),
+  name: z.string().min(1, "Name is required"),
+  contactPerson: z.string().optional().default(""),
   mobile: z.string().min(10, "Valid mobile number is required"),
   email: z.string().email("Invalid email").or(z.literal('')),
-  address: z.string(),
-  city: z.string().min(1, "City is required"),
-  state: z.string(),
-  country: z.string(),
-  pincode: z.string(),
-  source: z.string(),
-  segment: z.string(),
-  region: z.string(),
-  potential: z.string(),
+  address: z.string().optional().default(""),
+  city: z.string().optional().default(""),
+  state: z.string().optional().default(""),
+  country: z.string().optional().default(""),
+  pincode: z.string().optional().default(""),
+  source: z.string().optional().default(""),
+  segment: z.string().optional().default(""),
+  region: z.string().optional().default(""),
+  potential: z.string().optional().default(""),
+  locations: z.array(locationSchema).optional()
 });
 
 type CustomerFormValues = z.infer<typeof customerSchema>;
+type LocationFormValues = z.infer<typeof locationSchema>;
 
 export const CustomersPage = () => {
-  const { customers, addCustomer, updateCustomer, deleteCustomer } = useCustomerData();
+  const { customers, addCustomer, updateCustomer, deleteCustomer, fetchDealers, addDealerLocations, deleteDealerLocation, fetchCountries, fetchStates } = useCustomerData();
   const navigate = useNavigate();
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<CustomerRecord | null>(null);
   const [submitError, setSubmitError] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState('All');
   const [toastMessage, setToastMessage] = useState('');
+  const [dealersList, setDealersList] = useState<any[]>([]);
+  const [isAddingNewDealer, setIsAddingNewDealer] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isTypeFilterOpen, setIsTypeFilterOpen] = useState(false);
+  const [dealerSearchText, setDealerSearchText] = useState('');
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<CustomerFormValues>({
+  const [countries, setCountries] = useState<{code: string, name: string}[]>([]);
+  const [statesList, setStatesList] = useState<{code: string, name: string}[]>([]);
+  const [locationStates, setLocationStates] = useState<Record<number, {code: string, name: string}[]>>({});
+
+  useEffect(() => {
+    fetchCountries().then(setCountries);
+  }, []);
+
+
+  const [expandedAddresses, setExpandedAddresses] = useState<number[]>([]);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const typeFilterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+      if (typeFilterRef.current && !typeFilterRef.current.contains(event.target as Node)) {
+        setIsTypeFilterOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const toggleAddressExpansion = (idx: number) => {
+    setExpandedAddresses(prev => 
+      prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
+    );
+  };
+
+  const { register, handleSubmit, reset, watch, setValue, getValues, control, formState: { errors } } = useForm<any>({
     resolver: zodResolver(customerSchema),
     defaultValues: {
-      type: 'Customer', name: '', mobile: '', email: '', address: '', city: '', state: '', pincode: '', dealerCode: '', source: '', segment: '', region: '', potential: '', notes: ''
+      type: 'Customer', name: '', contactPerson: '', mobile: '', email: '', address: '', city: '', state: '', country: 'India', pincode: '', source: '', segment: '', region: '', potential: '', locations: []
     }
   });
 
+  const watchCountry = watch('country');
+  useEffect(() => {
+    if (watchCountry) {
+      const c = countries.find(x => x.name === watchCountry || x.code === watchCountry);
+      if (c) fetchStates(c.code).then(setStatesList);
+      else setStatesList([]);
+    } else {
+      setStatesList([]);
+    }
+  }, [watchCountry, countries]);
+
+
+  const { fields: locationFields, append: appendLocation, remove: removeLocation } = useFieldArray({
+    control,
+    name: 'locations'
+  });
+
+  const handleDeleteExistingAddress = async (addressId: string, index: number) => {
+    console.log('[Remove Address] Button clicked');
+    console.log('[Remove Address] Selected Address ID:', addressId);
+    
+    if (window.confirm(`Are you sure you want to remove Address ${index + 1}?`)) {
+      console.log('[Remove Address] Confirmation OK callback executed');
+      console.log('[Remove Address] Mutation payload:', { locationId: addressId });
+      console.log('[Remove Address] Delete mutation started');
+      
+      const res = await deleteDealerLocation(addressId);
+      
+      if (res.success) {
+        console.log('[Remove Address] Delete mutation response:', res);
+        showToast('Address removed successfully.');
+        setDealersList(prev => prev.map(d => {
+          if (d.cid === selectedDealerId) {
+            return { ...d, locations: d.locations.filter((l: any) => l.locationId !== addressId) };
+          }
+          return d;
+        }));
+      } else {
+        console.error('[Remove Address] Delete mutation error:', res.error);
+        setSubmitError(res.error || 'Failed to remove address');
+      }
+    }
+  };
+
+  const watchType = watch('type');
+  
+  useEffect(() => {
+    if (watchType === 'Dealer') {
+      fetchDealers().then(data => {
+        console.log('[Dealer Debug] API response inside CustomersPage:', data);
+        setDealersList(data);
+      });
+    }
+  }, [watchType]);
+
+  const filteredDealers = useMemo(() => {
+    return dealersList.filter(d => {
+      if (!dealerSearchText) return true;
+      if (!d.customerCode) return false;
+      return d.customerCode.toLowerCase().includes(dealerSearchText.toLowerCase());
+    });
+  }, [dealersList, dealerSearchText]);
+
+  useEffect(() => {
+    console.log('[Dealer Debug] dealers array length:', dealersList?.length);
+    console.log('[Dealer Debug] filtered dealers length:', filteredDealers?.length);
+    console.log('[Dealer Debug] search text:', dealerSearchText);
+    console.log('[Dealer Debug] selected customer type:', watchType);
+  }, [dealersList?.length, filteredDealers?.length, dealerSearchText, watchType]);
+
+  const [selectedDealerId, setSelectedDealerId] = useState<string | null>(null);
+  const [isDealerAccordionOpen, setIsDealerAccordionOpen] = useState(true);
+
+  const handleDealerSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value;
+    setSelectedDealerId(selectedId === 'ADD_NEW' ? null : selectedId);
+    
+    if (selectedId === 'ADD_NEW') {
+      setIsAddingNewDealer(true);
+      setValue('name', '');
+      setValue('mobile', '');
+      setValue('email', '');
+      setValue('address', '');
+      setValue('city', '');
+      setValue('pincode', '');
+      if ((getValues('locations') || []).length === 0) {
+        setValue('locations', []);
+      }
+    } else if (selectedId) {
+      setIsAddingNewDealer(false);
+      const dealer = dealersList.find(d => d.cid === selectedId);
+      if (dealer) {
+        setValue('name', dealer.customerCode);
+        setValue('mobile', dealer.mobileNumber);
+        setValue('email', dealer.email || '');
+        const loc = dealer.locations?.[0];
+        if (loc) {
+          setValue('city', loc.city || loc.locationName || '');
+          setValue('address', loc.addressLine || '');
+          setValue('pincode', loc.pincode || '');
+          setValue('contactPerson', loc.contactPerson || '');
+        }
+        if ((getValues('locations') || []).length === 0) {
+          setValue('locations', [{ locationName: '', country: 'India', state: '', city: '', addressLine: '', pincode: '', contactPerson: '', mobileNumber: '', email: '' }]);
+        }
+      }
+    }
+  };
+
   const filteredCustomers = useMemo(() => {
-    if (!searchQuery) return customers;
+    let result = customers;
+    
+    if (typeFilter !== 'All') {
+      result = result.filter(c => c.type === typeFilter);
+    }
+    
+    if (!searchQuery) return result;
+    
     const lowerQ = searchQuery.toLowerCase();
-    return customers.filter(c => 
+    return result.filter(c => 
       c.name.toLowerCase().includes(lowerQ) ||
       c.mobile.includes(lowerQ) ||
       (c.email && c.email.toLowerCase().includes(lowerQ)) ||
       c.city.toLowerCase().includes(lowerQ) ||
       (c.dealerCode && c.dealerCode.toLowerCase().includes(lowerQ))
     );
-  }, [customers, searchQuery]);
+  }, [customers, searchQuery, typeFilter]);
 
   const kpis = [
     { icon: '👥', iconColor: '#ef4444', iconBg: '#fee2e2', value: customers.length.toString(), label: 'Total customers', trend: '▲ 214 this month', trendColor: '#10b981' },
@@ -538,12 +811,18 @@ export const CustomersPage = () => {
     if (customer) {
       setEditingCustomer(customer);
       reset({
-        type: customer.type, name: customer.name, mobile: customer.mobile, email: customer.email, address: customer.address, city: customer.city, state: customer.state, country: 'India', pincode: customer.pincode, source: customer.source, segment: customer.segment, region: customer.region, potential: customer.potential
+        type: customer.type, name: customer.name, contactPerson: customer.contactPerson || '', mobile: customer.mobile, email: customer.email, address: customer.address, city: customer.city, state: customer.state, country: 'India', pincode: customer.pincode, source: customer.source, segment: customer.segment, region: customer.region, potential: customer.potential, locations: customer.type === 'Dealer' ? [{ locationName: '', country: 'India', state: '', city: '', addressLine: '', pincode: '', contactPerson: '', mobileNumber: '', email: '' }] : (customer.locations || [])
       });
+      if (customer.type === 'Dealer' && customer.id) {
+        setSelectedDealerId(customer.id);
+      } else {
+        setSelectedDealerId(null);
+      }
     } else {
       setEditingCustomer(null);
+      setSelectedDealerId(null);
       reset({
-        type: 'Customer', name: '', mobile: '', email: '', address: '', city: '', state: '', country: 'India', pincode: '', source: 'Website', segment: 'Retail', region: 'South', potential: 'Medium'
+        type: 'Customer', name: '', contactPerson: '', mobile: '', email: '', address: '', city: '', state: '', country: 'India', pincode: '', source: 'Website', segment: 'Retail', region: 'South', potential: 'Medium', locations: []
       });
     }
     setIsDrawerOpen(true);
@@ -553,20 +832,61 @@ export const CustomersPage = () => {
     setIsDrawerOpen(false);
   };
 
-  const onSubmit = (data: CustomerFormValues) => {
+  const onSubmit = async (data: any) => {
     setSubmitError('');
+    
+    if (data.type === 'Dealer') {
+      if (!isAddingNewDealer && !selectedDealerId) {
+        setSubmitError('Please select a dealer or add a new one.');
+        return;
+      }
+
+      if (selectedDealerId && !isAddingNewDealer) {
+        // Editing existing dealer - update dealer locations
+        const newLocations = data.locations?.filter(l => !l.id) || [];
+        if (newLocations.length > 0) {
+          const res = await addDealerLocations(selectedDealerId, newLocations);
+          if (!res.success) {
+            setSubmitError(res.error || 'Failed to save locations');
+            return;
+          }
+          fetchDealers().then(data => setDealersList(data));
+          closeDrawer();
+          showToast('New addresses added successfully');
+        } else {
+          closeDrawer();
+        }
+        return;
+      } else {
+        const isDuplicate = dealersList.some(d => d.customerCode.toLowerCase() === data.name.toLowerCase());
+        if (isDuplicate && !editingCustomer) {
+          setSubmitError('A dealer with this name already exists.');
+          return;
+        }
+      }
+    }
+    
     const { country, ...rest } = data;
-    const dbData = { ...rest, dealerCode: '', notes: '' };
+    const dbData = { ...rest, country, dealerCode: '', notes: '' };
 
     if (editingCustomer) {
       updateCustomer(editingCustomer.id, dbData);
       closeDrawer();
       showToast('Customer updated successfully');
     } else {
-      const res = addCustomer(dbData);
+      const res = await addCustomer(dbData);
       if (res.success) {
+        if (data.type === 'Dealer' && isAddingNewDealer) {
+          fetchDealers().then(data => setDealersList(data));
+          setSelectedDealerId(res.data?.cid || res.data?.id || null);
+          setIsAddingNewDealer(false);
+          showToast('Dealer created successfully. You can now add locations.');
+          return;
+        } else if (data.type === 'Dealer') {
+          fetchDealers().then(data => setDealersList(data));
+        }
         closeDrawer();
-        showToast('Customer added successfully');
+        showToast(data.type === 'Dealer' ? 'Dealer created successfully.' : 'Customer added successfully');
       } else {
         setSubmitError(res.error || 'Unknown error occurred.');
       }
@@ -583,23 +903,21 @@ export const CustomersPage = () => {
     <>
       <PageTitle title="Customers" />
       <PageWrapper>
-        <TopGlobalBar>
+                        <TopGlobalBar>
           <SearchInputWrapper>
-            <SearchIcon>🔍</SearchIcon>
+            <SearchIcon><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></SearchIcon>
             <SearchInput 
-              placeholder="Search customers, tickets, deals... (/)" 
+              placeholder="Search leads, customers, deals, tickets..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </SearchInputWrapper>
           <GlobalActions>
-            <IconButton>🔔</IconButton>
-            <IconButton>❓</IconButton>
+            <IconButton><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></IconButton>
             <UserProfile>
-              <Avatar>SW</Avatar>
+              <Avatar>NL</Avatar>
               <UserInfo>
-                <UserName>Sawan</UserName>
-                <UserRole>Administrator</UserRole>
+                <UserName>Nagarajan Ladera</UserName>
               </UserInfo>
               <ChevronDown>▼</ChevronDown>
             </UserProfile>
@@ -610,11 +928,9 @@ export const CustomersPage = () => {
           <PageHeader>
             <TitleSection>
               <Title>Customers</Title>
-              <Subtitle>One 360° record — orders, tickets, warranty and invoices together.</Subtitle>
+              <Subtitle>Capture, score and qualify — every source feeds one funnel.</Subtitle>
             </TitleSection>
-            
             <HeaderActions>
-              <Button>Sync from ERP</Button>
               <Button primary onClick={() => openDrawer()}>+ New customer</Button>
             </HeaderActions>
           </PageHeader>
@@ -643,7 +959,36 @@ export const CustomersPage = () => {
                   </h3>
                   <Subtitle>Synced with SAP · updated just now</Subtitle>
                 </TitleSection>
-                <Button>All segments</Button>
+                <div style={{ position: 'relative' }} ref={typeFilterRef}>
+                  <Button onClick={() => setIsTypeFilterOpen(!isTypeFilterOpen)}>
+                    {typeFilter === 'All' ? 'Filter By Type' : typeFilter} ▼
+                  </Button>
+                  {isTypeFilterOpen && (
+                    <div style={{ 
+                      position: 'absolute', top: '100%', right: 0, marginTop: '4px', zIndex: 100, 
+                      background: 'white', border: `1px solid ${themeCssVariables.border.color.light}`, 
+                      borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', minWidth: '150px',
+                      overflow: 'hidden'
+                    }}>
+                      {['All', 'Dealer', 'Customer', 'Carpenter'].map(type => (
+                        <div 
+                          key={type}
+                          onClick={() => { setTypeFilter(type); setIsTypeFilterOpen(false); }}
+                          style={{
+                            padding: '8px 16px', fontSize: '13px', cursor: 'pointer',
+                            background: typeFilter === type ? '#f0f9ff' : 'white',
+                            color: typeFilter === type ? '#0284c7' : themeCssVariables.font.color.primary,
+                            fontWeight: typeFilter === type ? 600 : 400
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = typeFilter === type ? '#f0f9ff' : '#f9fafb'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = typeFilter === type ? '#f0f9ff' : 'white'}
+                        >
+                          {type}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </MasterHeader>
               
               <TableContainer>
@@ -698,13 +1043,13 @@ export const CustomersPage = () => {
         </PageContainer>
 
         {isDrawerOpen && (
-          <DrawerOverlay onClick={closeDrawer}>
-            <DrawerContent onClick={e => e.stopPropagation()}>
-              <DrawerHeader>
-                <Title style={{ fontSize: '18px' }}>{editingCustomer ? 'Edit Customer' : 'New Customer'}</Title>
+          <ModalOverlay onClick={closeDrawer}>
+            <ModalContent onClick={e => e.stopPropagation()}>
+              <ModalHeader>
+                <Title style={{ fontSize: '28px', fontWeight: 600 }}>{editingCustomer ? `Edit ${watchType || 'Customer'}` : `New ${watchType || 'Customer'}`}</Title>
                 <div style={{ cursor: 'pointer', fontSize: '20px', color: themeCssVariables.font.color.tertiary }} onClick={closeDrawer}>&times;</div>
-              </DrawerHeader>
-              <DrawerBody>
+              </ModalHeader>
+              <ModalBody>
                 {submitError && <Alert>{submitError}</Alert>}
                 <form id="customer-form" onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   
@@ -713,155 +1058,318 @@ export const CustomersPage = () => {
                     <Select {...register('type')}>
                       <option value="Customer">Customer</option>
                       <option value="Dealer">Dealer</option>
-                      <option value="Distributor">Distributor</option>
                       <option value="Carpenter">Carpenter</option>
-                      <option value="Influencer">Influencer</option>
                     </Select>
                   </FormGroup>
 
-                  <FormGroup>
-                    <Label>Customer Name *</Label>
-                    <Input {...register('name')} placeholder="Enter full name" />
-                    {errors.name && <ErrorText>{errors.name.message}</ErrorText>}
-                  </FormGroup>
+                  {watchType === 'Dealer' && !isAddingNewDealer && !editingCustomer ? (
+                      <>
+                        <FormGroup>
+                          <Label>Dealer Name *</Label>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <div style={{ position: 'relative', flex: 1, cursor: 'text' }} ref={dropdownRef} onClick={() => { setIsDropdownOpen(true); setDealerSearchText(''); }}>
+                              <Input 
+                                  value={isDropdownOpen ? dealerSearchText : (selectedDealerId ? (dealersList.find(d => d.cid === selectedDealerId)?.customerCode || '') : '')}
+                                  placeholder="Search Dealer"
+                                  autoComplete="off"
+                                  onFocus={() => { setIsDropdownOpen(true); setDealerSearchText(''); }}
+                                  onChange={(e) => {
+                                    setDealerSearchText(e.target.value);
+                                    setIsDropdownOpen(true);
+                                    if (!e.target.value) handleDealerSelect({ target: { value: '' } } as any);
+                                  }}
+                                  style={{ width: '100%', paddingRight: '30px' }}
+                                />
+                              <div style={{ 
+                                position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', 
+                                pointerEvents: 'none', color: themeCssVariables.font.color.secondary, fontSize: '10px'
+                              }}>
+                                ▼
+                              </div>
+                              {isDropdownOpen && (
+                                <div style={{ 
+                                  position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1000, 
+                                  background: '#fff', border: `1px solid ${themeCssVariables.border.color.light}`, 
+                                  borderRadius: '4px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', 
+                                  maxHeight: '300px', overflowY: 'auto', marginTop: '4px' 
+                                }}>
+                                  <div style={{ padding: '8px', borderBottom: `1px solid ${themeCssVariables.border.color.light}` }}>
+                                    <Button type="button" small onClick={(e) => { e.stopPropagation(); setIsAddingNewDealer(true); setValue('name', ''); setValue('mobile', ''); setValue('email', ''); setValue('city', ''); setValue('address', ''); setValue('pincode', ''); setValue('locations', []); setValue('locations', []); setIsDropdownOpen(false); }} style={{ width: '100%' }}>+ Add New Dealer</Button>
+                                  </div>
+                                  {filteredDealers.map(dealer => (
+                                    <div 
+                                      key={dealer.cid} 
+                                      style={{ 
+                                        padding: '12px 16px', 
+                                        borderBottom: `1px solid ${themeCssVariables.border.color.light}`,
+                                        cursor: 'pointer',
+                                        fontSize: '14px',
+                                        color: themeCssVariables.font.color.primary
+                                      }}
+                                      onClick={(e) => { e.stopPropagation(); handleDealerSelect({ target: { value: dealer.cid } } as any); setIsDropdownOpen(false); }}
+                                    >
+                                      {dealer.customerCode}
+                                    </div>
+                                  ))}
+                                  {filteredDealers.length === 0 && (
+                                    <div style={{ padding: '12px', fontSize: '12px', color: '#666' }}>No dealers found</div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </FormGroup>
+                        {selectedDealerId && (
+                          <div style={{ marginTop: '24px', marginBottom: '8px', fontSize: '18px', fontWeight: 600, color: themeCssVariables.font.color.primary }}>
+                            {dealersList.find(d => d.cid === selectedDealerId)?.customerCode}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <FormGroup>
+                        <Label>{watchType === 'Dealer' ? 'Dealer Name *' : 'Customer Name *'}</Label>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <Input {...register('name')} placeholder={watchType === 'Dealer' ? "Enter dealer name" : "Enter full name"} style={{ flex: 1 }} />
+                        </div>
+                        {errors.name && <ErrorText>{errors.name.message}</ErrorText>}
+                      </FormGroup>
+                    )}
 
-                  <FormGroup>
-                    <Label>Mobile Number *</Label>
-                    <Input {...register('mobile')} placeholder="Enter 10-digit number" />
-                    {errors.mobile && <ErrorText>{errors.mobile.message}</ErrorText>}
-                  </FormGroup>
+                    {!(watchType === 'Dealer' && !isAddingNewDealer) && (
+                    <>
+                      <FormGroup>
+                        <Label>Contact Person Name</Label>
+                        <Input {...register('contactPerson')} placeholder="Contact person name" disabled={!!selectedDealerId && !isAddingNewDealer} />
+                      </FormGroup>
 
-                  <FormGroup>
-                    <Label>Email</Label>
-                    <Input {...register('email')} placeholder="Email address" type="email" />
-                    {errors.email && <ErrorText>{errors.email.message}</ErrorText>}
-                  </FormGroup>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <FormGroup>
+                          <Label>Mobile Number *</Label>
+                          <Input {...register('mobile')} placeholder="Enter 10-digit number" disabled={!!selectedDealerId && !isAddingNewDealer} />
+                          {errors.mobile && <ErrorText>{errors.mobile.message}</ErrorText>}
+                        </FormGroup>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <FormGroup>
-                      <Label>Country</Label>
-                      <Select {...register('country')}>
-                        <option value="India">India</option>
-                        <option value="United States">United States</option>
-                        <option value="United Kingdom">United Kingdom</option>
-                        <option value="Canada">Canada</option>
-                        <option value="Australia">Australia</option>
-                        <option value="Singapore">Singapore</option>
-                        <option value="United Arab Emirates">United Arab Emirates</option>
-                      </Select>
-                    </FormGroup>
-                    <FormGroup>
-                      <Label>State</Label>
-                      <Select {...register('state')}>
-                        <option value="">Select State</option>
-                        <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
-                        <option value="Andhra Pradesh">Andhra Pradesh</option>
-                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
-                        <option value="Assam">Assam</option>
-                        <option value="Bihar">Bihar</option>
-                        <option value="Chandigarh">Chandigarh</option>
-                        <option value="Chhattisgarh">Chhattisgarh</option>
-                        <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
-                        <option value="Delhi">Delhi</option>
-                        <option value="Goa">Goa</option>
-                        <option value="Gujarat">Gujarat</option>
-                        <option value="Haryana">Haryana</option>
-                        <option value="Himachal Pradesh">Himachal Pradesh</option>
-                        <option value="Jammu and Kashmir">Jammu and Kashmir</option>
-                        <option value="Jharkhand">Jharkhand</option>
-                        <option value="Karnataka">Karnataka</option>
-                        <option value="Kerala">Kerala</option>
-                        <option value="Ladakh">Ladakh</option>
-                        <option value="Lakshadweep">Lakshadweep</option>
-                        <option value="Madhya Pradesh">Madhya Pradesh</option>
-                        <option value="Maharashtra">Maharashtra</option>
-                        <option value="Manipur">Manipur</option>
-                        <option value="Meghalaya">Meghalaya</option>
-                        <option value="Mizoram">Mizoram</option>
-                        <option value="Nagaland">Nagaland</option>
-                        <option value="Odisha">Odisha</option>
-                        <option value="Puducherry">Puducherry</option>
-                        <option value="Punjab">Punjab</option>
-                        <option value="Rajasthan">Rajasthan</option>
-                        <option value="Sikkim">Sikkim</option>
-                        <option value="Tamil Nadu">Tamil Nadu</option>
-                        <option value="Telangana">Telangana</option>
-                        <option value="Tripura">Tripura</option>
-                        <option value="Uttar Pradesh">Uttar Pradesh</option>
-                        <option value="Uttarakhand">Uttarakhand</option>
-                        <option value="West Bengal">West Bengal</option>
-                      </Select>
-                    </FormGroup>
-                  </div>
+                        <FormGroup>
+                          <Label>Email</Label>
+                          <Input {...register('email')} placeholder="Email address" type="email" disabled={!!selectedDealerId && !isAddingNewDealer} />
+                          {errors.email && <ErrorText>{errors.email.message}</ErrorText>}
+                        </FormGroup>
+                      </div>
 
-                  <FormGroup>
-                    <Label>City *</Label>
-                    <Input {...register('city')} placeholder="City name" />
-                    {errors.city && <ErrorText>{errors.city.message}</ErrorText>}
-                  </FormGroup>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <FormGroup>
+                          <Label>Country</Label>
+                          <Select 
+                            {...register('country')} 
+                            disabled={!!selectedDealerId && !isAddingNewDealer}
+                            onChange={(e) => {
+                              register('country').onChange(e);
+                              setValue('state', '');
+                            }}
+                          >
+                            <option value="">Select Country</option>
+                            {countries.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+                          </Select>
+                        </FormGroup>
+                        <FormGroup>
+                          <Label>State</Label>
+                          <Select {...register('state')} disabled={!!selectedDealerId && !isAddingNewDealer}>
+                            <option value="">Select State</option>
+                            {statesList.map(s => <option key={s.code} value={s.code}>{s.name}</option>)}
+                          </Select>
+                        </FormGroup>
+                      </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <FormGroup>
-                      <Label>Address</Label>
-                      <Input {...register('address')} />
-                    </FormGroup>
-                    <FormGroup>
-                      <Label>Pincode</Label>
-                      <Input {...register('pincode')} />
-                    </FormGroup>
-                  </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <FormGroup>
+                          <Label>City *</Label>
+                          <Input {...register('city')} placeholder="City name" disabled={!!selectedDealerId && !isAddingNewDealer} />
+                          {errors.city && <ErrorText>{errors.city.message}</ErrorText>}
+                        </FormGroup>
+                        <FormGroup>
+                          <Label>Pincode</Label>
+                          <Input {...register('pincode')} disabled={!!selectedDealerId && !isAddingNewDealer} />
+                        </FormGroup>
+                      </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <FormGroup>
-                      <Label>Source</Label>
-                      <Select {...register('source')}>
-                        <option value="Website">Website</option>
-                        <option value="WhatsApp">WhatsApp</option>
-                        <option value="Referral">Referral</option>
-                        <option value="Campaign">Campaign</option>
-                        <option value="Dealer Portal">Dealer Portal</option>
-                        <option value="Field Sales">Field Sales</option>
-                      </Select>
-                    </FormGroup>
-                    <FormGroup>
-                      <Label>Segment</Label>
-                      <Select {...register('segment')}>
-                        <option value="Retail">Retail</option>
-                        <option value="Dealer">Dealer</option>
-                        <option value="B2B">B2B</option>
-                      </Select>
-                    </FormGroup>
-                  </div>
+                      <FormGroup>
+                        <Label>Address</Label>
+                        <Input {...register('address')} disabled={!!selectedDealerId && !isAddingNewDealer} />
+                      </FormGroup>
+                    </>
+                  )}
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <FormGroup>
-                      <Label>Region</Label>
-                      <Select {...register('region')}>
-                        <option value="South">South</option>
-                        <option value="North">North</option>
-                        <option value="East">East</option>
-                        <option value="West">West</option>
-                      </Select>
-                    </FormGroup>
-                    <FormGroup>
-                      <Label>Business Potential</Label>
-                      <Select {...register('potential')}>
-                        <option value="Low">Low</option>
-                        <option value="Medium">Medium</option>
-                        <option value="High">High</option>
-                        <option value="Very High">Very High</option>
-                      </Select>
-                    </FormGroup>
-                  </div>
+                  {watchType === 'Dealer' && (
+                    <div style={{ marginTop: '16px', paddingTop: '16px' }}>
+                      
+                      {locationFields.map((field, index) => (
+                        <div key={field.id} style={{ marginTop: index > 0 ? '16px' : '0', paddingBottom: '16px', borderBottom: '1px solid #eaeaea' }}>
+                          {index > 0 && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                              <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 500, color: 'var(--font-color-secondary)' }}>
+                                Address {index + 1}
+                              </h4>
+                              <Button type="button" small danger onClick={() => removeLocation(index)}>Remove</Button>
+                            </div>
+                          )}
+
+                          <FormGroup style={{ marginBottom: '12px' }}>
+                            <Label>Branch Name *</Label>
+                            <Input {...register(`locations.${index}.locationName` as const)} placeholder="Location name" />
+                          </FormGroup>
+
+                          <FormGroup style={{ marginBottom: '12px' }}>
+                            <Label>Contact Person Name *</Label>
+                            <Input {...register(`locations.${index}.contactPerson` as const)} placeholder="Contact person name" />
+                          </FormGroup>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                            <FormGroup>
+                              <Label>Mobile Number *</Label>
+                              <Input {...register(`locations.${index}.mobileNumber` as const)} placeholder="Enter 10-digit number" />
+                            </FormGroup>
+                            <FormGroup>
+                              <Label>Email</Label>
+                              <Input {...register(`locations.${index}.email` as const)} placeholder="Email address" type="email" />
+                            </FormGroup>
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                            <FormGroup>
+                              <Label>Country *</Label>
+                              <Select 
+                                {...register(`locations.${index}.country` as const)}
+                                onChange={(e) => {
+                                  register(`locations.${index}.country` as const).onChange(e);
+                                  setValue(`locations.${index}.state` as const, ''); // Clear state
+                                  const c = e.target.value;
+                                  if (c) {
+                                    fetchStates(c).then(st => {
+                                      setLocationStates(prev => ({ ...prev, [index]: st }));
+                                    });
+                                  } else {
+                                    setLocationStates(prev => ({ ...prev, [index]: [] }));
+                                  }
+                                }}
+                              >
+                                <option value="">Select Country</option>
+                                {countries.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+                              </Select>
+                            </FormGroup>
+                            <FormGroup>
+                              <Label>State *</Label>
+                              <Select {...register(`locations.${index}.state` as const)}>
+                                <option value="">Select State</option>
+                                {(locationStates[index] || []).map(s => <option key={s.code} value={s.code}>{s.name}</option>)}
+                              </Select>
+                            </FormGroup>
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                            <FormGroup>
+                              <Label>City *</Label>
+                              <Input {...register(`locations.${index}.city` as const)} />
+                            </FormGroup>
+                            <FormGroup>
+                              <Label>Pincode *</Label>
+                              <Input {...register(`locations.${index}.pincode` as const)} />
+                            </FormGroup>
+                          </div>
+
+                          <FormGroup>
+                            <Label>Address *</Label>
+                            <Input {...register(`locations.${index}.addressLine` as const)} />
+                          </FormGroup>
+                        </div>
+                      ))}
+
+                      {(isAddingNewDealer || selectedDealerId) && (
+                        <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '16px', marginBottom: '12px' }}>
+                          <Button type="button" small onClick={() => appendLocation({ locationName: '', country: 'IN', state: '', city: '', addressLine: '', pincode: '', contactPerson: '', mobileNumber: '', email: '' })}>+ Add Another Address</Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {!(watchType === 'Dealer' && !isAddingNewDealer) && (
+                    <>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <FormGroup>
+                        <Label>Source</Label>
+                        <Select {...register('source')} disabled={!!selectedDealerId && !isAddingNewDealer}>
+                          <option value="Website">Website</option>
+                          <option value="WhatsApp">WhatsApp</option>
+                          <option value="Referral">Referral</option>
+                          <option value="Campaign">Campaign</option>
+                          <option value="Dealer Portal">Dealer Portal</option>
+                          <option value="Field Sales">Field Sales</option>
+                        </Select>
+                      </FormGroup>
+                      <FormGroup>
+                        <Label>Segment</Label>
+                        <Select {...register('segment')} disabled={!!selectedDealerId && !isAddingNewDealer}>
+                          <option value="Retail">Retail</option>
+                          <option value="Dealer">Dealer</option>
+                          <option value="B2B">B2B</option>
+                        </Select>
+                      </FormGroup>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <FormGroup>
+                        <Label>Region</Label>
+                        <Select {...register('region')} disabled={!!selectedDealerId && !isAddingNewDealer}>
+                          <option value="South">South</option>
+                          <option value="North">North</option>
+                          <option value="East">East</option>
+                          <option value="West">West</option>
+                        </Select>
+                      </FormGroup>
+                      <FormGroup>
+                        <Label>Business Potential</Label>
+                        <Select {...register('potential')} disabled={!!selectedDealerId && !isAddingNewDealer}>
+                          <option value="Low">Low</option>
+                          <option value="Medium">Medium</option>
+                          <option value="High">High</option>
+                          <option value="Very High">Very High</option>
+                        </Select>
+                      </FormGroup>
+                    </div>
+                    </>
+                  )}
 
                 </form>
-              </DrawerBody>
-              <DrawerFooter>
-                <Button type="button" onClick={closeDrawer}>Cancel</Button>
-                <Button primary type="submit" form="customer-form">Create Customer</Button>
-              </DrawerFooter>
-            </DrawerContent>
-          </DrawerOverlay>
+              </ModalBody>
+              <ModalFooter>
+                <Button type="button" onClick={() => {
+                  if (isAddingNewDealer) {
+                    setIsAddingNewDealer(false);
+                    if (!selectedDealerId) {
+                      setValue('name', '');
+                      setValue('mobile', '');
+                      setValue('email', '');
+                      setValue('city', '');
+                      setValue('address', '');
+                      setValue('pincode', ''); setValue('locations', []);
+                    }
+                  } else {
+                    closeDrawer();
+                  }
+                }}>Cancel</Button>
+                {watchType === 'Dealer' ? (
+                  isAddingNewDealer ? (
+                    <Button primary type="submit" form="customer-form">Save Dealer</Button>
+                  ) : selectedDealerId ? (
+                    locationFields.length > 0 ? (
+                      <Button primary type="submit" form="customer-form">Save Address</Button>
+                    ) : null
+                  ) : null
+                ) : (
+                  <Button primary type="submit" form="customer-form">{editingCustomer ? 'Update Customer' : 'Create Customer'}</Button>
+                )}
+              </ModalFooter>
+            </ModalContent>
+          </ModalOverlay>
         )}
 
         {toastMessage && (

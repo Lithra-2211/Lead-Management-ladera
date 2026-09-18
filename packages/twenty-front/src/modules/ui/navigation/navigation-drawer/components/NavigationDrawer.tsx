@@ -55,15 +55,16 @@ const StyledAnimatedContainer = styled.div<{
 const StyledContainer = styled.div<{
   isExpanded?: boolean;
 }>`
-  background: #F6F1EE;
+  background: #ffffff;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: ${themeCssVariables.spacing[3]};
+  gap: ${themeCssVariables.spacing[4]};
   height: 100%;
-  padding: 20px 12px;
+  padding: 24px 16px;
   width: ${({ isExpanded }) =>
     isExpanded ? `var(${NAVIGATION_DRAWER_WIDTH_VAR})` : '100%'};
+  border-right: 1px solid ${themeCssVariables.border.color.light};
   @media (max-width: ${MOBILE_VIEWPORT}px) {
     gap: ${themeCssVariables.spacing[4]};
     width: 100%;

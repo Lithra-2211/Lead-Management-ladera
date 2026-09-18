@@ -1,18 +1,56 @@
 import { currentWorkspaceState } from '@/auth/states/currentWorkspaceState';
 import {
   StyledContainer,
-  StyledIconChevronDown,
-  StyledLabel,
-  StyledLabelWrapper,
 } from '@/ui/navigation/navigation-drawer/components/MultiWorkspaceDropdown/internal/MultiWorkspacesDropdownStyles';
 import { NavigationDrawerAnimatedCollapseWrapper } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerAnimatedCollapseWrapper';
-import { DEFAULT_WORKSPACE_LOGO } from '@/ui/navigation/navigation-drawer/constants/DefaultWorkspaceLogo';
 import { useIsNavigationDrawerContentExpanded } from '@/navigation/hooks/useIsNavigationDrawerContentExpanded';
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
-import { getAbsoluteImageUrl } from '~/utils/image/getAbsoluteImageUrl';
+import { styled } from '@linaria/react';
 import { useContext } from 'react';
-import { Avatar } from 'twenty-ui/data-display';
-import { ThemeContext } from 'twenty-ui/theme-constants';
+import { ThemeContext, themeCssVariables } from 'twenty-ui/theme-constants';
+
+const StyledBrandContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px;
+`;
+
+const StyledBrandIcon = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+`;
+
+const StyledBrandText = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+`;
+
+const StyledBrandName = styled.div`
+  font-size: 16px;
+  font-weight: 800;
+  color: #fdb918;
+  line-height: 1.1;
+  letter-spacing: 0.5px;
+`;
+
+const StyledBrandSubtitle = styled.div`
+  font-size: 12px;
+  font-weight: 700;
+  color: #1b1b4f;
+  line-height: 1.1;
+  letter-spacing: 0.5px;
+`;
 
 type MultiWorkspaceDropdownClickableComponentProps = {
   disabled?: boolean;
@@ -23,36 +61,27 @@ export const MultiWorkspaceDropdownClickableComponent = ({
   disabled,
   shouldHideLabel = false,
 }: MultiWorkspaceDropdownClickableComponentProps) => {
-  const { theme } = useContext(ThemeContext);
-  const currentWorkspace = useAtomStateValue(currentWorkspaceState);
-
   const isNavigationDrawerExpanded = useIsNavigationDrawerContentExpanded();
   return (
     <StyledContainer
       data-testid="workspace-dropdown"
       isNavigationDrawerExpanded={isNavigationDrawerExpanded}
       disabled={disabled}
+      style={{ height: 'auto', padding: 0 }}
     >
-      <Avatar
-        placeholder={currentWorkspace?.displayName || ''}
-        avatarUrl="/century-ply-logo.png"
-      />
-      {!shouldHideLabel && (
-        <>
-          <StyledLabelWrapper>
-            <NavigationDrawerAnimatedCollapseWrapper>
-              {/* <StyledLabel>{currentWorkspace?.displayName ?? ''}</StyledLabel> */}
-              <StyledLabel> Century Ply CX </StyledLabel>
-            </NavigationDrawerAnimatedCollapseWrapper>
-          </StyledLabelWrapper>
-          {/* <NavigationDrawerAnimatedCollapseWrapper>
-            <StyledIconChevronDown
-              size={theme.icon.size.md}
-              stroke={theme.icon.stroke.sm}
-            />
-          </NavigationDrawerAnimatedCollapseWrapper> */}
-        </>
-      )}
+      <StyledBrandContainer>
+        <StyledBrandIcon>
+          <img src="/ladera-icon.png" alt="Ladera Technology Logo" />
+        </StyledBrandIcon>
+        {!shouldHideLabel && (
+          <NavigationDrawerAnimatedCollapseWrapper>
+            <StyledBrandText>
+              <StyledBrandName>LADERA</StyledBrandName>
+              <StyledBrandSubtitle>TECHNOLOGY</StyledBrandSubtitle>
+            </StyledBrandText>
+          </NavigationDrawerAnimatedCollapseWrapper>
+        )}
+      </StyledBrandContainer>
     </StyledContainer>
   );
 };

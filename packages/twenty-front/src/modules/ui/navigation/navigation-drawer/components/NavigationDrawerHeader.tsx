@@ -81,7 +81,7 @@ export const NavigationDrawerHeader = ({
         <MultiWorkspaceDropdownButton />
       </StyledWorkspaceDropdownContainer>
       <StyledRightActions isExpanded={isExpanded}>
-        {!isMobile && (
+        {/*!isMobile && (
           <LightIconButton
             Icon={IconSearch}
             accent="secondary"
@@ -89,12 +89,12 @@ export const NavigationDrawerHeader = ({
             onClick={openRecordsSearchPage}
             aria-label={t`Search`}
           />
-        )}
-        {isExpanded && showCollapseButton && (
+        )*/}
+        {/*!isExpanded && showCollapseButton && (
           <StyledNavigationDrawerCollapseButtonContainer>
             <NavigationDrawerCollapseButton direction="left" />
           </StyledNavigationDrawerCollapseButtonContainer>
-        )}
+        )*/}
       </StyledRightActions>
     </StyledContainer>
   );

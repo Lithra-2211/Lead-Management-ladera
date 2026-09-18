@@ -15,17 +15,23 @@ const StyledTitle = styled.div`
   display: flex;
   height: ${themeCssVariables.spacing[7]};
   justify-content: space-between;
-  padding-bottom: ${themeCssVariables.spacing[1]};
-  padding-left: ${themeCssVariables.spacing[1]};
-  padding-right: ${themeCssVariables.spacing['0.5']};
-  padding-top: ${themeCssVariables.spacing[1]};
+  padding: 16px 4px 6px 12px;
+  margin-top: 4px;
+
+  .section-title-label {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    color: #64748b !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
 
   &:hover {
     background-color: ${themeCssVariables.background.transparent.light};
     cursor: pointer;
 
     .section-title-label {
-      color: ${themeCssVariables.font.color.tertiary};
+      color: ${themeCssVariables.font.color.primary} !important;
     }
   }
 `;

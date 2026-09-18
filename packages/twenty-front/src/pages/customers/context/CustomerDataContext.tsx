@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { gql } from '@apollo/client';
+import { useApolloCoreClient } from '@/object-metadata/hooks/useApolloCoreClient';
 
 export type CustomerHealth = 'Active' | 'At risk' | 'Inactive';
 export type CustomerType = 'Customer' | 'Dealer' | 'Distributor' | 'Carpenter' | 'Influencer';
@@ -7,12 +9,14 @@ export interface CustomerRecord {
   id: string;
   type: CustomerType;
   name: string;
+  contactPerson?: string;
   mobile: string;
   email: string;
   address: string;
   city: string;
   state: string;
   pincode: string;
+  country?: string;
   dealerCode?: string;
   source: string;
   segment: string;
@@ -28,6 +32,7 @@ export interface CustomerRecord {
   lastInteractionDate: string;
   color: string;
   initials: string;
+  locations?: any[];
 }
 
 export interface CustomerOrder {
@@ -48,12 +53,109 @@ export interface CustomerTicket {
 
 interface CustomerDataContextType {
   customers: CustomerRecord[];
-  addCustomer: (customer: Omit<CustomerRecord, 'id' | 'health' | 'ltv' | 'orders' | 'openTickets' | 'closedTickets' | 'avgCsat' | 'lastInteractionDate' | 'color' | 'initials'>) => { success: boolean; error?: string };
+  addCustomer: (customer: Omit<CustomerRecord, 'id' | 'health' | 'ltv' | 'orders' | 'openTickets' | 'closedTickets' | 'avgCsat' | 'lastInteractionDate' | 'color' | 'initials'>) => Promise<{ success: boolean; error?: string; data?: any }>;
   updateCustomer: (id: string, customer: Partial<CustomerRecord>) => void;
   deleteCustomer: (id: string) => void;
   getOrdersForCustomer: (customerId: string) => CustomerOrder[];
   getTicketsForCustomer: (customerId: string) => CustomerTicket[];
+  fetchDealers: () => Promise<any[]>;
+  addDealerLocations: (cid: string, locations: any[]) => Promise<{ success: boolean; error?: string }>;
+  deleteDealerLocation: (locationId: string) => Promise<{ success: boolean; error?: string }>;
+  fetchCountries: () => Promise<{ code: string; name: string }[]>;
+  fetchStates: (countryCode: string) => Promise<{ code: string; name: string }[]>;
 }
+
+const CREATE_CUSTOMER = gql`
+  mutation CreateCustomer($input: CreateCustomerInput!) {
+    createCustomer(input: $input) {
+      cid
+      customerCode
+      mobileNumber
+      email
+      customerType
+      locations {
+        locationId
+        locationName
+        addressLine
+        pincode
+        contactPersonName
+        mobileNumber
+        email
+        country
+        state
+        city
+      }
+    }
+  }
+`;
+
+const ADD_DEALER_LOCATIONS = gql`
+  mutation AddDealerLocations($cid: String!, $locations: [CreateLocationInput!]!) {
+    addDealerLocations(cid: $cid, locations: $locations) {
+      cid
+      locations {
+        locationId
+        locationName
+        addressLine
+        pincode
+        contactPersonName
+        mobileNumber
+        email
+        country
+        state
+        city
+      }
+    }
+  }
+`;
+
+const DELETE_DEALER_LOCATION = gql`
+  mutation DeleteDealerLocation($locationId: String!) {
+    deleteDealerLocation(locationId: $locationId)
+  }
+`;
+
+const GET_COUNTRIES = gql`
+  query GetCountries {
+    getCountries {
+      code
+      name
+    }
+  }
+`;
+
+const GET_STATES = gql`
+  query GetStates($countryCode: String!) {
+    getStates(countryCode: $countryCode) {
+      code
+      name
+    }
+  }
+`;
+
+const GET_DEALERS = gql`
+  query GetDealers {
+    getDealers {
+      cid
+      customerCode
+      mobileNumber
+      email
+      customerType
+      locations {
+        locationId
+        locationName
+        addressLine
+        pincode
+        contactPersonName
+        mobileNumber
+        email
+        country
+        state
+        city
+      }
+    }
+  }
+`;
 
 const generateInitials = (name: string) => {
   const parts = name.trim().split(' ');
@@ -92,21 +194,20 @@ export const CustomerDataProvider: React.FC<{ children: ReactNode }> = ({ childr
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
+      } catch {
         return initialCustomers;
       }
     }
     return initialCustomers;
   });
 
+  const apolloCoreClient = useApolloCoreClient();
+
   useEffect(() => {
     localStorage.setItem('mock_customers', JSON.stringify(customers));
   }, [customers]);
 
-  const addCustomer = (data: Omit<CustomerRecord, 'id' | 'health' | 'ltv' | 'orders' | 'openTickets' | 'closedTickets' | 'avgCsat' | 'lastInteractionDate' | 'color' | 'initials'>) => {
-    // TEMPORARY FRONTEND MOCK VALIDATION
-    // BACKEND VALIDATION WILL BE ENABLED LATER
-    
+  const addCustomer = async (data: Omit<CustomerRecord, 'id' | 'health' | 'ltv' | 'orders' | 'openTickets' | 'closedTickets' | 'avgCsat' | 'lastInteractionDate' | 'color' | 'initials'>) => {
     if (customers.some(c => c.mobile === data.mobile)) {
       return { success: false, error: 'Mobile Number already exists' };
     }
@@ -119,9 +220,56 @@ export const CustomerDataProvider: React.FC<{ children: ReactNode }> = ({ childr
       return { success: false, error: 'Dealer Code already exists' };
     }
 
+    let createdDealerData = null;
+    try {
+      const response = await apolloCoreClient.mutate({
+        mutation: CREATE_CUSTOMER,
+        variables: {
+          input: {
+            customerCode: data.name,
+            mobileNumber: data.mobile,
+            email: data.email || null,
+            customerType: data.type,
+            locationName: data.city,
+            addressLine: data.address,
+            pincode: data.pincode,
+            city: data.city,
+            state: data.state,
+            country: data.country,
+            locations: data.locations && data.locations.length > 0 ? data.locations.map((l: any) => ({
+              locationName: l.locationName || l.city || 'Branch Office',
+              addressLine: l.addressLine || '',
+              pincode: l.pincode || null,
+              contactPersonName: l.contactPerson || data.name,
+              mobileNumber: l.mobileNumber || data.mobile,
+              email: l.email || null,
+              country: l.country,
+              state: l.state,
+              city: l.city
+            })) : [{
+              locationName: data.city || 'Primary Address',
+              addressLine: data.address || '',
+              pincode: data.pincode || null,
+              contactPersonName: data.contactPerson || data.name,
+              mobileNumber: data.mobile,
+              email: data.email || null,
+              country: data.country,
+              state: data.state,
+              city: data.city
+            }]
+          }
+        }
+      });
+      createdDealerData = response.data?.createCustomer;
+    } catch (err: any) {
+      console.error('Failed to save to backend:', err);
+      return { success: false, error: err.message || 'Failed to save customer to database' };
+    }
+
     const newCustomer: CustomerRecord = {
       ...data,
-      id: Date.now().toString(),
+      id: createdDealerData?.cid || Date.now().toString(),
+      cid: createdDealerData?.cid || '',
       health: 'Active',
       ltv: '₹0',
       orders: 0,
@@ -134,7 +282,47 @@ export const CustomerDataProvider: React.FC<{ children: ReactNode }> = ({ childr
     };
 
     setCustomers(prev => [newCustomer, ...prev]);
-    return { success: true };
+    return { success: true, data: createdDealerData };
+  };
+
+  const deleteDealerLocation = async (locationId: string) => {
+    try {
+      await apolloCoreClient.mutate({
+        mutation: DELETE_DEALER_LOCATION,
+        variables: { locationId }
+      });
+      return { success: true };
+    } catch (err: any) {
+      console.error('Failed to delete location:', err);
+      return { success: false, error: err.message || 'Failed to delete location' };
+    }
+  };
+
+  const addDealerLocations = async (cid: string, locations: any[]) => {
+    try {
+      const processedLocations = locations.map(l => ({
+        locationName: l.locationName || l.city || 'Branch Office',
+        addressLine: l.addressLine || '',
+        pincode: l.pincode || null,
+        contactPersonName: l.contactPerson,
+        mobileNumber: l.mobileNumber,
+        email: l.email || null,
+        country: l.country,
+        state: l.state,
+        city: l.city
+      }));
+      await apolloCoreClient.mutate({
+        mutation: ADD_DEALER_LOCATIONS,
+        variables: {
+          cid,
+          locations: processedLocations
+        }
+      });
+      return { success: true };
+    } catch (err: any) {
+      console.error('Failed to add locations:', err);
+      return { success: false, error: err.message || 'Failed to add locations' };
+    }
   };
 
   const updateCustomer = (id: string, data: Partial<CustomerRecord>) => {
@@ -148,8 +336,43 @@ export const CustomerDataProvider: React.FC<{ children: ReactNode }> = ({ childr
   const getOrdersForCustomer = (customerId: string) => mockOrders.filter(o => o.customerId === customerId);
   const getTicketsForCustomer = (customerId: string) => mockTickets.filter(t => t.customerId === customerId);
 
+  const fetchDealers = async () => {
+    try {
+      const { data } = await apolloCoreClient.query({
+        query: GET_DEALERS,
+        fetchPolicy: 'network-only'
+      });
+      console.log('[Dealer Debug] API response:', data);
+      const dealers = data?.getDealers || [];
+      console.log('[Dealer Debug] dealers array length:', dealers?.length);
+      return dealers;
+    } catch (err) {
+      console.error('[Dealer Debug] Failed to fetch dealers:', err);
+      return [];
+    }
+  };
+
+  const fetchCountries = async () => {
+    try {
+      const { data } = await apolloCoreClient.query({ query: GET_COUNTRIES, fetchPolicy: 'cache-first' });
+      return data?.getCountries || [];
+    } catch {
+      return [];
+    }
+  };
+
+  const fetchStates = async (countryCode: string) => {
+    if (!countryCode) return [];
+    try {
+      const { data } = await apolloCoreClient.query({ query: GET_STATES, variables: { countryCode }, fetchPolicy: 'cache-first' });
+      return data?.getStates || [];
+    } catch {
+      return [];
+    }
+  };
+
   return (
-    <CustomerDataContext.Provider value={{ customers, addCustomer, updateCustomer, deleteCustomer, getOrdersForCustomer, getTicketsForCustomer }}>
+    <CustomerDataContext.Provider value={{ customers, addCustomer, updateCustomer, deleteCustomer, getOrdersForCustomer, getTicketsForCustomer, fetchDealers, addDealerLocations, deleteDealerLocation, fetchCountries, fetchStates }}>
       {children}
     </CustomerDataContext.Provider>
   );

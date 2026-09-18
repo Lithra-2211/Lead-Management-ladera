@@ -191,10 +191,11 @@ const Td = styled.td`
   border-bottom: 1px solid ${themeCssVariables.border.color.light};
 `;
 
-const KeyValueList = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+const HorizontalSummaryBar = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  align-items: flex-start;
 `;
 
 const KvPair = styled.div`
@@ -218,13 +219,57 @@ const KvValue = styled.div`
 export const Customer360Page = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { customers, getOrdersForCustomer, getTicketsForCustomer } = useCustomerData();
+  const { customers, getOrdersForCustomer, getTicketsForCustomer, fetchDealers } = useCustomerData();
 
   const [activeTab, setActiveTab] = useState('Overview');
+  const [locations, setLocations] = useState<any[]>([]);
 
   const customer = customers.find(c => c.id === id);
   const orders = customer ? getOrdersForCustomer(customer.id) : [];
   const tickets = customer ? getTicketsForCustomer(customer.id) : [];
+
+  React.useEffect(() => {
+    if (customer) {
+      if (customer.type === 'Dealer') {
+        fetchDealers().then(dealers => {
+          const dealer = dealers.find(d => d.cid === customer.id || d.customerCode === customer.name);
+          if (dealer && dealer.locations && dealer.locations.length > 0) {
+            setLocations(dealer.locations);
+          } else if (customer.locations && customer.locations.length > 0) {
+            setLocations(customer.locations);
+          } else {
+            setLocations([{
+              locationName: customer.city || '',
+              contactPersonName: customer.contactPerson || '',
+              mobileNumber: customer.mobile || '',
+              email: customer.email || '',
+              country: customer.country || 'India',
+              state: customer.state || '',
+              city: customer.city || '',
+              addressLine: customer.address || '',
+              pincode: customer.pincode || ''
+            }]);
+          }
+        });
+      } else {
+        if (customer.locations && customer.locations.length > 0) {
+          setLocations(customer.locations);
+        } else {
+          setLocations([{
+            locationName: customer.city || '',
+            contactPersonName: customer.contactPerson || '',
+            mobileNumber: customer.mobile || '',
+            email: customer.email || '',
+            country: customer.country || 'India',
+            state: customer.state || '',
+            city: customer.city || '',
+            addressLine: customer.address || '',
+            pincode: customer.pincode || ''
+          }]);
+        }
+      }
+    }
+  }, [customer, fetchDealers]);
 
   if (!customer) {
     return (
@@ -305,19 +350,37 @@ export const Customer360Page = () => {
 
           <TabContent>
             {activeTab === 'Overview' && (
-              <SectionCard>
-                <SectionTitle>Customer Profile Details</SectionTitle>
-                <KeyValueList>
-                  <KvPair><KvKey>Customer Type</KvKey><KvValue>{customer.type}</KvValue></KvPair>
-                  <KvPair><KvKey>Segment</KvKey><KvValue>{customer.segment}</KvValue></KvPair>
-                  <KvPair><KvKey>Source</KvKey><KvValue>{customer.source}</KvValue></KvPair>
-                  <KvPair><KvKey>Region</KvKey><KvValue>{customer.region}</KvValue></KvPair>
-                  <KvPair><KvKey>Business Potential</KvKey><KvValue>{customer.potential}</KvValue></KvPair>
-                  <KvPair><KvKey>Dealer/Distributor Code</KvKey><KvValue>{customer.dealerCode || 'N/A'}</KvValue></KvPair>
-                  <KvPair><KvKey>Address</KvKey><KvValue>{customer.address}, {customer.city}, {customer.state} - {customer.pincode}</KvValue></KvPair>
-                  <KvPair><KvKey>Notes</KvKey><KvValue>{customer.notes || 'None'}</KvValue></KvPair>
-                </KeyValueList>
-              </SectionCard>
+              <>
+                <SectionCard>
+                  <SectionTitle>{customer.type} Profile Details</SectionTitle>
+                  <HorizontalSummaryBar>
+                    <KvPair><KvKey>Customer Type</KvKey><KvValue>{customer.type}</KvValue></KvPair>
+                    <KvPair><KvKey>Segment</KvKey><KvValue>{customer.segment}</KvValue></KvPair>
+                    <KvPair><KvKey>Source</KvKey><KvValue>{customer.source}</KvValue></KvPair>
+                    <KvPair><KvKey>Region</KvKey><KvValue>{customer.region}</KvValue></KvPair>
+                    <KvPair><KvKey>Business Potential</KvKey><KvValue>{customer.potential}</KvValue></KvPair>
+                    <KvPair><KvKey>Dealer/Distributor Code</KvKey><KvValue>{customer.dealerCode || 'N/A'}</KvValue></KvPair>
+                    <KvPair><KvKey>Address</KvKey><KvValue>{customer.address}, {customer.city}, {customer.state} - {customer.pincode}</KvValue></KvPair>
+                  </HorizontalSummaryBar>
+                </SectionCard>
+
+                {locations.map((loc, index) => (
+                  <SectionCard key={loc.locationId || index}>
+                    <SectionTitle>Address {index + 1}</SectionTitle>
+                    <HorizontalSummaryBar>
+                      <KvPair><KvKey>Location</KvKey><KvValue>{loc.locationName || 'N/A'}</KvValue></KvPair>
+                      <KvPair><KvKey>Contact Person</KvKey><KvValue>{loc.contactPersonName || 'N/A'}</KvValue></KvPair>
+                      <KvPair><KvKey>Mobile Number</KvKey><KvValue>{loc.mobileNumber || 'N/A'}</KvValue></KvPair>
+                      <KvPair><KvKey>Email</KvKey><KvValue>{loc.email || 'N/A'}</KvValue></KvPair>
+                      <KvPair><KvKey>Country</KvKey><KvValue>{loc.country || 'India'}</KvValue></KvPair>
+                      <KvPair><KvKey>State</KvKey><KvValue>{loc.state || 'N/A'}</KvValue></KvPair>
+                      <KvPair><KvKey>City</KvKey><KvValue>{loc.city || 'N/A'}</KvValue></KvPair>
+                      <KvPair><KvKey>Address</KvKey><KvValue>{loc.addressLine || 'N/A'}</KvValue></KvPair>
+                      <KvPair><KvKey>Pincode</KvKey><KvValue>{loc.pincode || 'N/A'}</KvValue></KvPair>
+                    </HorizontalSummaryBar>
+                  </SectionCard>
+                ))}
+              </>
             )}
 
             {activeTab === 'Orders History' && (

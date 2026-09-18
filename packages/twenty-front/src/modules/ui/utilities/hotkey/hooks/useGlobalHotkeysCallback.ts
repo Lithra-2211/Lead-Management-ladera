@@ -50,15 +50,23 @@ export const useGlobalHotkeysCallback = (
         return;
       }
 
+      const target = keyboardEvent.target as HTMLElement | null;
+      const isInput = target && (
+        target.tagName === 'INPUT' || 
+        target.tagName === 'TEXTAREA' || 
+        target.tagName === 'SELECT' || 
+        target.isContentEditable
+      );
+
       if (
         !containsModifier &&
-        !currentGlobalHotkeysConfig.enableGlobalHotkeysConflictingWithKeyboard
+        (!currentGlobalHotkeysConfig.enableGlobalHotkeysConflictingWithKeyboard || isInput)
       ) {
         if (DEBUG_FOCUS_STACK) {
           logDebug(
             `DEBUG: %cI can't call hotkey (${
               hotkeysEvent.keys
-            }) because global hotkeys conflicting with keyboard are disabled`,
+            }) because global hotkeys conflicting with keyboard are disabled or user is typing in an input`,
             'color: gray; ',
           );
         }
