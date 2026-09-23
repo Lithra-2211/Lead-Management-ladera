@@ -9,6 +9,11 @@ import { useAtomComponentStateValue } from '@/ui/utilities/state/jotai/hooks/use
 import { isUndefined } from '@sniptt/guards';
 import { ReportsPage } from '~/pages/dashboards/DashboardsPage';
 import { LeadsPage } from '~/pages/leads/LeadsPage';
+import { CustomersPage } from '~/pages/customers/CustomersPage';
+import { useSearchParams } from 'react-router-dom';
+import { PageTitle } from '@/ui/utilities/page-title/components/PageTitle';
+import { IconLayoutDashboard } from 'twenty-ui/icon';
+import { PageWrapper, ContentContainer, IconWrapper, Title, Subtitle } from '@/app/components/SettingsRoutes';
 
 export const RecordIndexPage = () => {
   const [searchParams] = useSearchParams();

@@ -10,6 +10,8 @@ import { styled } from '@linaria/react';
 import {
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarRightCollapse,
+  IconLayoutSidebarLeftExpand,
+  IconLayoutSidebarRightExpand,
 } from 'twenty-ui/icon';
 import { LightIconButton } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
@@ -58,13 +60,17 @@ export const NavigationDrawerCollapseButton = ({
       <LightIconButton
         Icon={
           direction === 'left'
-            ? IconLayoutSidebarLeftCollapse
-            : IconLayoutSidebarRightCollapse
+            ? isNavigationDrawerExpanded
+              ? IconLayoutSidebarLeftCollapse
+              : IconLayoutSidebarLeftExpand
+            : isNavigationDrawerExpanded
+              ? IconLayoutSidebarRightCollapse
+              : IconLayoutSidebarRightExpand
         }
         accent="secondary"
         size="small"
         aria-label={
-          direction === 'left'
+          isNavigationDrawerExpanded
             ? t`Collapse navigation panel`
             : t`Expand navigation panel`
         }

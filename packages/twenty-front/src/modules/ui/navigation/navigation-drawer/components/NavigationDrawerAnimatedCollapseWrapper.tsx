@@ -8,16 +8,21 @@ import {
 } from 'framer-motion';
 import { useContext } from 'react';
 import { ThemeContext } from 'twenty-ui/theme-constants';
-const StyledAnimatedContainerBase = styled.span`
+const StyledAnimatedContainerBase = styled.span<{ fullWidth?: boolean }>`
   display: block;
+  flex: ${({ fullWidth }) => (fullWidth ? '1 1 auto' : 'initial')};
+  min-width: ${({ fullWidth }) => (fullWidth ? '0px' : 'auto')};
+  overflow: hidden;
 `;
 
 const StyledAnimatedContainer = motion.create(StyledAnimatedContainerBase);
 
 export const NavigationDrawerAnimatedCollapseWrapper = ({
   children,
+  fullWidth,
 }: {
   children: React.ReactNode;
+  fullWidth?: boolean;
 }) => {
   const { theme } = useContext(ThemeContext);
   const isSettingsPage = useIsSettingsPage();
@@ -44,6 +49,7 @@ export const NavigationDrawerAnimatedCollapseWrapper = ({
 
   return (
     <StyledAnimatedContainer
+      fullWidth={fullWidth}
       initial={false}
       animate={animate}
       transition={{

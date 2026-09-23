@@ -11,14 +11,16 @@ import { useIsNavigationDrawerContentExpanded } from '@/navigation/hooks/useIsNa
 import { useIsMobile } from '@/ui/utilities/responsive/hooks/useIsMobile';
 import { NavigationDrawerCollapseButton } from './NavigationDrawerCollapseButton';
 
-const StyledContainer = styled.div<{ isExpanded: boolean }>`
-  align-items: ${({ isExpanded }) => (isExpanded ? 'center' : 'flex-start')};
+const StyledContainer = styled.div<{ 'data-expanded': boolean }>`
+  align-items: center;
+  justify-content: ${({ 'data-expanded': isExpanded }) => (isExpanded ? 'flex-start' : 'center')};
   display: flex;
-  flex-direction: ${({ isExpanded }) => (isExpanded ? 'row' : 'column')};
+  flex-direction: ${({ 'data-expanded': isExpanded }) => (isExpanded ? 'row' : 'column')};
   flex-shrink: 0;
-  gap: ${({ isExpanded }) => (isExpanded ? '0' : themeCssVariables.spacing[4])};
+  gap: ${({ 'data-expanded': isExpanded }) => (isExpanded ? '0' : '12px')};
   min-height: ${PAGE_BAR_MIN_HEIGHT}px;
-  padding-right: ${themeCssVariables.spacing[2]};
+  padding-right: ${({ 'data-expanded': isExpanded }) => (isExpanded ? themeCssVariables.spacing[2] : '0')};
+  padding-left: 0;
   transition: gap calc(${themeCssVariables.animation.duration.normal} * 1s) ease;
   user-select: none;
 
@@ -28,15 +30,14 @@ const StyledContainer = styled.div<{ isExpanded: boolean }>`
   }
 `;
 
-const StyledRightActions = styled.div<{ isExpanded: boolean }>`
+const StyledRightActions = styled.div<{ 'data-expanded': boolean }>`
   align-items: center;
-  align-self: ${({ isExpanded }) => (isExpanded ? 'auto' : 'flex-end')};
+  align-self: center;
   display: flex;
-  flex-direction: ${({ isExpanded }) => (isExpanded ? 'row' : 'column')};
+  flex-direction: row;
   flex-shrink: 0;
-  gap: ${({ isExpanded }) =>
-    isExpanded ? '2px' : themeCssVariables.spacing[1]};
-  margin-left: ${({ isExpanded }) => (isExpanded ? 'auto' : '0')};
+  gap: 0;
+  margin-left: ${({ 'data-expanded': isExpanded }) => (isExpanded ? 'auto' : '0')};
   transition: gap calc(${themeCssVariables.animation.duration.normal} * 1s) ease;
 `;
 
@@ -76,11 +77,11 @@ export const NavigationDrawerHeader = ({
   const isExpanded = useIsNavigationDrawerContentExpanded();
 
   return (
-    <StyledContainer isExpanded={isExpanded}>
+    <StyledContainer data-expanded={isExpanded}>
       <StyledWorkspaceDropdownContainer>
         <MultiWorkspaceDropdownButton />
       </StyledWorkspaceDropdownContainer>
-      <StyledRightActions isExpanded={isExpanded}>
+      <StyledRightActions data-expanded={isExpanded}>
         {/*!isMobile && (
           <LightIconButton
             Icon={IconSearch}
@@ -90,11 +91,11 @@ export const NavigationDrawerHeader = ({
             aria-label={t`Search`}
           />
         )*/}
-        {/*!isExpanded && showCollapseButton && (
+        {showCollapseButton && (
           <StyledNavigationDrawerCollapseButtonContainer>
             <NavigationDrawerCollapseButton direction="left" />
           </StyledNavigationDrawerCollapseButtonContainer>
-        )*/}
+        )}
       </StyledRightActions>
     </StyledContainer>
   );

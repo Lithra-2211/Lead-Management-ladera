@@ -15,11 +15,11 @@ const StyledTitle = styled.div`
   display: flex;
   height: ${themeCssVariables.spacing[7]};
   justify-content: space-between;
-  padding: 16px 4px 6px 12px;
-  margin-top: 4px;
+  padding: 8px 4px 4px 10px;
+  margin-top: 2px;
 
   .section-title-label {
-    font-size: 11px !important;
+    font-size: 10px !important;
     font-weight: 700 !important;
     color: #64748b !important;
     text-transform: uppercase;
@@ -96,6 +96,10 @@ export const NavigationDrawerSectionTitle = ({
       onClick();
     }
   };
+
+  if (!isNavigationDrawerExpanded && !isSettingsPage) {
+    return null;
+  }
 
   return (
     <StyledTitle className="section-title-container">

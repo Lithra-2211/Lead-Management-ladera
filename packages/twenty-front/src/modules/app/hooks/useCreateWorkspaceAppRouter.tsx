@@ -67,6 +67,12 @@ const LeadsPage = lazy(() =>
   })),
 );
 
+const UnderConstructionPage = lazy(() =>
+  import('~/pages/under-construction/UnderConstructionPage').then((module) => ({
+    default: module.UnderConstructionPage,
+  })),
+);
+
 const PasswordReset = lazy(() =>
   import('~/pages/auth/PasswordReset').then((module) => ({
     default: module.PasswordReset,
@@ -185,10 +191,12 @@ const createWorkspaceAppRouter = ({
             <Route element={<CustomerDataProvider><MainAppLayoutWithSidePanel /></CustomerDataProvider>}>
               <Route path="/customers/:id" element={<LazyRoute><Customer360Page /></LazyRoute>} />
               <Route path="/tickets" element={<LazyRoute><PlaceholderPage title="Tickets" /></LazyRoute>} />
-              <Route path="/inbox" element={<LazyRoute><PlaceholderPage title="Inbox" /></LazyRoute>} />
-              <Route path="/field-services" element={<LazyRoute><PlaceholderPage title="Field Service" /></LazyRoute>} />
-              <Route path="/approvals" element={<LazyRoute><PlaceholderPage title="Approvals" /></LazyRoute>} />
-              <Route path="/automations" element={<LazyRoute><PlaceholderPage title="Automations" /></LazyRoute>} />
+              <Route path="/inbox" element={<LazyRoute><UnderConstructionPage moduleName="Inbox" /></LazyRoute>} />
+              <Route path="/field-services" element={<LazyRoute><UnderConstructionPage moduleName="Field Service" /></LazyRoute>} />
+              <Route path="/approvals" element={<LazyRoute><UnderConstructionPage moduleName="Approvals" /></LazyRoute>} />
+              <Route path="/automations" element={<LazyRoute><UnderConstructionPage moduleName="Automations" /></LazyRoute>} />
+              <Route path="/reports" element={<LazyRoute><UnderConstructionPage moduleName="Reports" /></LazyRoute>} />
+              <Route path="/administration" element={<LazyRoute><UnderConstructionPage moduleName="Administration" /></LazyRoute>} />
               
               {isWorkflowCoreIndexPageEnabled && (
                 <Route
@@ -213,6 +221,14 @@ const createWorkspaceAppRouter = ({
                 element={
                   <LazyRoute fallback={<RecordIndexSkeletonLoader />}>
                     <LeadsPage />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path="/deals"
+                element={
+                  <LazyRoute>
+                    <UnderConstructionPage moduleName="Deals" />
                   </LazyRoute>
                 }
               />

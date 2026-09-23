@@ -8,21 +8,35 @@ import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomState
 import { styled } from '@linaria/react';
 import { useContext } from 'react';
 import { ThemeContext, themeCssVariables } from 'twenty-ui/theme-constants';
+import { Link } from 'react-router-dom';
 
-const StyledBrandContainer = styled.div`
+const StyledBrandContainer = styled(Link)<{ isExpanded?: boolean }>`
   display: flex;
   align-items: center;
+  justify-content: ${({ isExpanded }) => (isExpanded === false ? 'center' : 'flex-start')};
   gap: 10px;
   padding: 8px 4px;
+  cursor: pointer;
+  text-decoration: none;
+  width: 100%;
+  box-sizing: border-box;
+  transform-origin: left center;
+  transition: transform 250ms ease, filter 250ms ease;
+
+  &:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+  }
 `;
 
-const StyledBrandIcon = styled.div`
+const StyledBrandIcon = styled.div<{ isExpanded?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: ${({ isExpanded }) => (isExpanded === false ? '44px' : '34px')};
+  height: ${({ isExpanded }) => (isExpanded === false ? '44px' : '34px')};
   flex-shrink: 0;
+  transition: width 0.2s ease, height 0.2s ease;
   img {
     width: 100%;
     height: 100%;
@@ -37,19 +51,23 @@ const StyledBrandText = styled.div`
 `;
 
 const StyledBrandName = styled.div`
-  font-size: 16px;
-  font-weight: 800;
+  font-size: 19px;
+  font-weight: 900;
   color: #fdb918;
   line-height: 1.1;
   letter-spacing: 0.5px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  opacity: 1 !important;
 `;
 
 const StyledBrandSubtitle = styled.div`
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   color: #1b1b4f;
   line-height: 1.1;
   letter-spacing: 0.5px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  opacity: 1 !important;
 `;
 
 type MultiWorkspaceDropdownClickableComponentProps = {
@@ -69,8 +87,8 @@ export const MultiWorkspaceDropdownClickableComponent = ({
       disabled={disabled}
       style={{ height: 'auto', padding: 0 }}
     >
-      <StyledBrandContainer>
-        <StyledBrandIcon>
+      <StyledBrandContainer to="/objects/dashboards" isExpanded={isNavigationDrawerExpanded}>
+        <StyledBrandIcon isExpanded={isNavigationDrawerExpanded}>
           <img src="/ladera-icon.png" alt="Ladera Technology Logo" />
         </StyledBrandIcon>
         {!shouldHideLabel && (

@@ -4,12 +4,12 @@ import { themeCssVariables } from 'twenty-ui/theme-constants';
 import { NotificationCounter } from 'twenty-ui/data-display';
 import {
   IconLayoutDashboard,
-  IconCheckbox,
+  IconSquareCheck,
   IconTarget,
   IconBriefcase,
-  IconSun,
+  IconUsers,
   IconTag,
-  IconInbox,
+  IconMail,
   IconTool,
   IconCheck,
   IconBolt,
@@ -24,7 +24,7 @@ import { NavigationDrawerItem } from '@/ui/navigation/navigation-drawer/componen
 const StyledScrollableItemsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${themeCssVariables.spacing[3]};
+  gap: ${themeCssVariables.spacing[2]};
   height: 100%;
 `;
 
@@ -56,28 +56,31 @@ const StatusDot = styled.div`
   background-color: #10b981;
 `;
 
+import { useIsNavigationDrawerContentExpanded } from '@/navigation/hooks/useIsNavigationDrawerContentExpanded';
+
 export const MainNavigationDrawerScrollableItems = () => {
   const { pathname } = useLocation();
+  const isExpanded = useIsNavigationDrawerContentExpanded();
 
   return (
     <StyledScrollableItemsContainer>
       <NavigationDrawerSection>
         <NavigationDrawerSectionTitle label="OVERVIEW" />
         <NavigationDrawerItem label="Dashboard" Icon={IconLayoutDashboard} to="/objects/dashboards" />
-        <NavigationDrawerItem label="My Tasks" Icon={IconCheckbox} to="/objects/tasks" />
+        <NavigationDrawerItem label="My Tasks" Icon={IconSquareCheck} to="/objects/tasks" />
       </NavigationDrawerSection>
 
       <NavigationDrawerSection>
         <NavigationDrawerSectionTitle label="SALES" />
         <NavigationDrawerItem label="Leads" Icon={IconTarget} to="/objects/leads" active={pathname.startsWith('/objects/leads')} />
-        <NavigationDrawerItem label="Deals" Icon={IconBriefcase} to="/objects/deals" />
-        <NavigationDrawerItem label="Customers" Icon={IconSun} to="/objects/companies" />
+        <NavigationDrawerItem label="Deals" Icon={IconBriefcase} to="/deals" active={pathname.startsWith('/deals')} />
+        <NavigationDrawerItem label="Customers" Icon={IconUsers} to="/objects/companies" />
       </NavigationDrawerSection>
 
       <NavigationDrawerSection>
         <NavigationDrawerSectionTitle label="SERVICE" />
         <NavigationDrawerItem label="Tickets" Icon={IconTag} to="/objects/tickets" rightOptions={<NotificationCounter count={4} variant="primary" />} alwaysShowRightOptions />
-        <NavigationDrawerItem label="Inbox" Icon={IconInbox} to="/inbox" rightOptions={<NotificationCounter count={12} variant="primary" />} alwaysShowRightOptions />
+        <NavigationDrawerItem label="Inbox" Icon={IconMail} to="/inbox" rightOptions={<NotificationCounter count={12} variant="primary" />} alwaysShowRightOptions />
         <NavigationDrawerItem label="Field Service" Icon={IconTool} to="/field-services" />
       </NavigationDrawerSection>
 
@@ -85,14 +88,10 @@ export const MainNavigationDrawerScrollableItems = () => {
         <NavigationDrawerSectionTitle label="OPERATIONS" />
         <NavigationDrawerItem label="Approvals" Icon={IconCheck} to="/approvals" rightOptions={<NotificationCounter count={3} variant="primary" />} alwaysShowRightOptions />
         <NavigationDrawerItem label="Automations" Icon={IconBolt} to="/automations" />
-        <NavigationDrawerItem label="Reports" Icon={IconChartBar} to="/objects/dashboards" active={pathname.startsWith('/objects/dashboards')} />
-        <NavigationDrawerItem label="Administration" Icon={IconSettings} to="/settings" />
+        <NavigationDrawerItem label="Reports" Icon={IconChartBar} to="/reports" active={pathname.startsWith('/reports')} />
+        <NavigationDrawerItem label="Administration" Icon={IconSettings} to="/administration" active={pathname.startsWith('/administration')} />
       </NavigationDrawerSection>
 
-      <StyledFooter>
-        <FooterTitle>Century Ply CX v1.0</FooterTitle>
-        <FooterStatus>All systems operational <StatusDot /></FooterStatus>
-      </StyledFooter>
     </StyledScrollableItemsContainer>
   );
 };

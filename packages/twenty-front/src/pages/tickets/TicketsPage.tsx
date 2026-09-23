@@ -67,6 +67,14 @@ const MetricsContainer = styled.div`
   display: flex;
   gap: 16px;
   margin-bottom: 24px;
+  
+  @media (max-width: 1024px) {
+    flex-wrap: wrap;
+  }
+  
+  @media (max-width: 767px) {
+    flex-direction: column;
+  }
 `;
 
 const MetricCard = styled.div`
@@ -78,6 +86,7 @@ const MetricCard = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 200px;
 `;
 
 const MetricIcon = styled.div<{ bg: string; color: string }>`
@@ -116,6 +125,7 @@ const TableContainer = styled.div`
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  overflow-x: auto;
 `;
 
 const TableHeader = styled.div`

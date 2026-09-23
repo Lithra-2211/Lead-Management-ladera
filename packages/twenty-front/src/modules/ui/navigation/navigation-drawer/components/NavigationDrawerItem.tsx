@@ -83,63 +83,62 @@ type StyledItemProps = Pick<
 const StyledItem = styled.button<StyledItemProps>`
   align-items: center;
   position: relative;
-  background: ${({ active }) =>
-    active ? 'linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)' : 'transparent'};
+  background: transparent;
   border-left: none;
   border: ${({ isSelectedInEditMode }) =>
     isSelectedInEditMode
       ? `1px solid ${themeCssVariables.color.blue}`
       : '1px solid transparent'};
-  border-radius: 8px;
+
   box-sizing: border-box;
-  color: ${({ active, isSoon, variant }) => {
-    if (variant === 'tertiary') {
-      return themeCssVariables.font.color.tertiary;
-    }
-    if (active === true) {
-      return 'white';
-    }
-    if (isSoon) {
-      return themeCssVariables.font.color.light;
-    }
-    return '#334155'; /* neutral/dark color for normal state */
-  }};
-  font-weight: ${({ active }) => (active ? '600' : '500')};
+
   cursor: ${({ isSoon, isDragging }) =>
     isDragging ? 'grabbing' : isSoon ? 'default' : 'pointer'};
   display: flex;
   font-family: ${themeCssVariables.font.family};
-  font-size: 13px;
-  height: 36px;
-  margin-top: 2px;
-  margin-bottom: 2px;
+  font-size: 14px;
+  height: 38px;
+  margin-top: 1px;
+  margin-bottom: 1px;
   min-width: 0;
-  padding: 0 12px;
+  padding: ${({ isNavigationDrawerExpanded }) => (isNavigationDrawerExpanded ? '0 6px' : '0')};
   pointer-events: ${({ isSoon }) => (isSoon ? 'none' : 'auto')};
   text-decoration: none;
   user-select: none;
   transition: all 0.2s ease;
   width: ${({ isNavigationDrawerExpanded, hasRightOptions }) =>
-    !isNavigationDrawerExpanded
-      ? `calc(${NAVIGATION_DRAWER_COLLAPSED_WIDTH}px - ${themeCssVariables.spacing[6]} + ${themeCssVariables.spacing[1]} + ${hasRightOptions ? themeCssVariables.spacing['0.5'] : themeCssVariables.spacing[1]})`
-      : `calc(100% - ${themeCssVariables.spacing['1.5']} + ${themeCssVariables.spacing[1]} + ${hasRightOptions ? themeCssVariables.spacing['0.5'] : themeCssVariables.spacing[1]})`};
+      !isNavigationDrawerExpanded
+        ? '38px'
+        : `calc(100% - ${themeCssVariables.spacing['1.5']} + ${themeCssVariables.spacing[1]} + ${hasRightOptions ? themeCssVariables.spacing['0.5'] : themeCssVariables.spacing[1]})`};
+  border-radius: 8px;
+  justify-content: ${({ isNavigationDrawerExpanded }) => (!isNavigationDrawerExpanded ? 'center' : 'flex-start')};
+  margin: ${({ isNavigationDrawerExpanded }) => (!isNavigationDrawerExpanded ? '2px auto' : '1px 0')};
+
+  background: ${({ active }) => active ? '#DBEAFE' : 'transparent'};
+  
+  color: ${({ active, isSoon, variant }) => {
+    if (active) return '#2563EB';
+    if (variant === 'tertiary') return themeCssVariables.font.color.tertiary;
+    if (isSoon) return themeCssVariables.font.color.light;
+    return '#334155';
+  }};
+
+  font-weight: ${({ active }) => active ? '600' : '500'};
 
   &:hover {
-    background: ${({ active }) => (active ? 'linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)' : '#2563EB')};
-    color: white;
+    background: ${({ active }) => active ? '#DBEAFE' : '#EFF6FF'};
+    color: ${({ active }) => active ? '#2563EB' : '#1D4ED8'};
   }
   
-  &:hover svg, &[aria-current="page"] svg {
-    color: white !important;
-    stroke: white !important;
+  &:hover svg {
+    color: ${({ active }) => active ? '#2563EB' : '#1D4ED8'} !important;
+    stroke: ${({ active }) => active ? '#2563EB' : '#1D4ED8'} !important;
   }
-
-  ${({ active }) => active && `
-    svg {
-      color: white !important;
-      stroke: white !important;
-    }
-  `}
+  
+  &[aria-current="page"] svg {
+    color: #2563EB !important;
+    stroke: #2563EB !important;
+  }
 
   &:hover .keyboard-shortcuts {
     visibility: visible;
@@ -147,11 +146,13 @@ const StyledItem = styled.button<StyledItemProps>`
 
   @media (max-width: ${MOBILE_VIEWPORT}px) {
     height: ${themeCssVariables.spacing[8]};
+    width: ${({ isNavigationDrawerExpanded }) => (!isNavigationDrawerExpanded ? themeCssVariables.spacing[8] : '100%')};
   }
 `;
 
-const StyledItemElementsContainer = styled.div`
+const StyledItemElementsContainer = styled.div<{ isExpanded?: boolean }>`
   align-items: center;
+  justify-content: ${({ isExpanded }) => (isExpanded === false ? 'center' : 'flex-start')};
   display: flex;
   width: 100%;
 `;
@@ -166,18 +167,16 @@ const StyledLabelParent = styled.div`
   white-space: nowrap;
 `;
 
-// const StyledItemLabel = styled.span`
-//   font-weight: 600;
-// `;
 const StyledItemLabel = styled.span`
-  font-weight: 600;
-  font-size: 15px;
-  color: #2D3142;
+  font-weight: inherit;
+  font-size: 14px;
+  color: inherit;
 `;
 
 const StyledItemSecondaryLabel = styled.span`
-  color: ${themeCssVariables.font.color.light};
-  font-weight: ${themeCssVariables.font.weight.regular};
+  color: inherit;
+  opacity: 0.8;
+  font-weight: inherit;
 `;
 
 const StyledKeyBoardShortcut = styled.span`
@@ -195,22 +194,25 @@ const StyledKeyBoardShortcut = styled.span`
   width: ${themeCssVariables.spacing[4]};
 `;
 
-const StyledNavigationDrawerItemContainer = styled.div`
+const StyledNavigationDrawerItemContainer = styled.div<{ isExpanded?: boolean }>`
   display: flex;
   width: 100%;
+  justify-content: ${({ isExpanded }) => (isExpanded === false ? 'center' : 'flex-start')};
 `;
 
 const StyledSpacer = styled.span`
   flex-grow: 1;
 `;
 
-const StyledIcon = styled.div`
+const StyledIcon = styled.div<{ $isExpanded?: boolean }>`
   align-items: center;
   display: flex;
   flex-grow: 0;
   flex-shrink: 0;
   justify-content: center;
-  margin-right: 10px;
+  position: relative;
+  z-index: 1;
+  margin-right: ${({ $isExpanded }) => ($isExpanded === false ? '0' : '8px')};
 `;
 
 const StyledIconBackgroundTile = styled.div`
@@ -339,10 +341,11 @@ export const NavigationDrawerItem = ({
         : undefined;
 
   return (
-    <StyledNavigationDrawerItemContainer>
+    <StyledNavigationDrawerItemContainer isExpanded={isExpanded}>
       <StyledItem
         id={navigationItemId}
-        className={`navigation-drawer-item ${className || ''}`}
+        data-tooltip-id={navigationItemId}
+        className={`navigation-drawer-item ${active ? 'active' : ''} ${className || ''}`}
         onClick={handleMouseDownNavigationClickClick}
         onMouseDown={handleMouseDown}
         active={active}
@@ -362,7 +365,7 @@ export const NavigationDrawerItem = ({
         rel={isExternalLink ? 'noopener noreferrer' : undefined}
         draggable={isInternalLink ? false : undefined}
       >
-        <StyledItemElementsContainer>
+        <StyledItemElementsContainer isExpanded={isExpanded}>
           {showBreadcrumb && (
             <NavigationDrawerAnimatedCollapseWrapper>
               <NavigationDrawerItemBreadcrumb state={subItemState} />
@@ -371,14 +374,14 @@ export const NavigationDrawerItem = ({
 
           {Icon &&
             (isNonEmptyString(iconColor) ? (
-              <StyledIcon>
+              <StyledIcon $isExpanded={isExpanded}>
                 <TintedIconTile Icon={Icon} color={iconColor} />
               </StyledIcon>
             ) : withIconBackground ? (
-              <StyledIcon>
+              <StyledIcon $isExpanded={isExpanded}>
                 <StyledIconBackgroundTile>
                   <Icon
-                    size={theme.icon.size.md}
+                    size={16}
                     stroke={theme.icon.stroke.md}
                     color={
                       showBreadcrumb && !isExpanded
@@ -389,12 +392,12 @@ export const NavigationDrawerItem = ({
                 </StyledIconBackgroundTile>
               </StyledIcon>
             ) : (
-              <StyledIcon>
+              <StyledIcon $isExpanded={isExpanded}>
                 <Icon
                   style={{
-                    minWidth: theme.icon.size.md,
+                    minWidth: 16,
                   }}
-                  size={theme.icon.size.md}
+                  size={16}
                   stroke={theme.icon.stroke.md}
                   color={
                     showBreadcrumb && !isExpanded
@@ -405,24 +408,26 @@ export const NavigationDrawerItem = ({
               </StyledIcon>
             ))}
 
-          <StyledLabelParent>
-            <OverflowingTextWithTooltip
-              text={
-                <>
-                  <StyledItemLabel>{label}</StyledItemLabel>
-                  {secondaryLabel && (
-                    <StyledItemSecondaryLabel>
-                      {' · '}
-                      {secondaryLabel}
-                    </StyledItemSecondaryLabel>
-                  )}
-                </>
-              }
-              tooltipContent={
-                secondaryLabel ? `${label} · ${secondaryLabel}` : label
-              }
-            />
-          </StyledLabelParent>
+          <NavigationDrawerAnimatedCollapseWrapper fullWidth>
+            <StyledLabelParent>
+              <OverflowingTextWithTooltip
+                text={
+                  <>
+                    <StyledItemLabel>{label}</StyledItemLabel>
+                    {secondaryLabel && (
+                      <StyledItemSecondaryLabel>
+                        {' · '}
+                        {secondaryLabel}
+                      </StyledItemSecondaryLabel>
+                    )}
+                  </>
+                }
+                tooltipContent={
+                  secondaryLabel ? `${label} · ${secondaryLabel}` : label
+                }
+              />
+            </StyledLabelParent>
+          </NavigationDrawerAnimatedCollapseWrapper>
 
           {showStyledSpacer && <StyledSpacer />}
 
@@ -476,11 +481,12 @@ export const NavigationDrawerItem = ({
 
       {!isExpanded && !isMobile && (
         <AppTooltip
-          anchorSelect={`#${navigationItemId}`}
+          anchorSelect={`[data-tooltip-id='${navigationItemId}']`}
           content={label}
           place={TooltipPosition.Right}
           delay={TooltipDelay.noDelay}
           positionStrategy="fixed"
+          offset={16}
         />
       )}
     </StyledNavigationDrawerItemContainer>

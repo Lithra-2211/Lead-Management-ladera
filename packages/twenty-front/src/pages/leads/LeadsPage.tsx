@@ -302,12 +302,16 @@ const ToastBanner = styled.div<{ isError?: boolean }>`
 // 4 Metric Cards Grid
 const MetricsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-bottom: 20px;
 
-  @media (min-width: 1280px) {
-    grid-template-columns: repeat(4, 1fr);
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
   }
 `;
 
@@ -366,6 +370,7 @@ const TableCard = styled.div`
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px -12px rgba(16, 24, 40, 0.08);
   display: flex;
   flex-direction: column;
+  overflow-x: auto;
 `;
 
 const TableTopBar = styled.div`
@@ -1034,15 +1039,18 @@ export const LeadsPage = () => {
         if (Array.isArray(data) && data.length > 0) {
           const normalized: LeadItem[] = data.map((l: any) => ({
             ...l,
-            leadNumber: l.leadNumber || l.phone || '+91 98000 00000',
-            leadEmail: l.leadEmail || l.email || null,
-            leadSource: l.leadSource || l.source || 'Website',
+            id: String(l.id || l._id || l.uuid || Math.random().toString()),
+            leadName: String(l.leadName || l.name || l.title || 'Unknown'),
+            leadNumber: String(l.leadNumber || l.phone || '+91 98000 00000'),
+            leadEmail: l.leadEmail || l.email ? String(l.leadEmail || l.email) : null,
+            leadSource: String(l.leadSource || l.source || 'Website'),
             isQualifiedLead: l.isQualifiedLead !== undefined ? l.isQualifiedLead : (l.stage === 'Qualified' || l.score === 'A'),
-            status: l.status || l.stage || 'New',
+            status: String(l.status || l.stage || 'New'),
             nextFollowupDate: l.nextFollowupDate || '2026-09-15',
-            assignedSalesUser: l.assignedSalesUser || '',
-            createdAt: l.createdAt || new Date().toISOString(),
-            updatedAt: l.updatedAt || new Date().toISOString(),
+            assignedSalesUser: typeof l.assignedSalesUser === 'object' && l.assignedSalesUser ? String(l.assignedSalesUser.name || l.assignedSalesUser.firstName || '') : typeof l.salesUser === 'object' && l.salesUser ? String(l.salesUser.name || l.salesUser.firstName || '') : String(l.assignedSalesUser || l.salesUser || ''),
+            companyName: typeof l.companyName === 'object' && l.companyName ? String(l.companyName.name || '') : typeof l.company === 'object' && l.company ? String(l.company.name || '') : (l.companyName || l.company ? String(l.companyName || l.company) : null),
+            createdAt: String(l.createdAt || new Date().toISOString()),
+            updatedAt: String(l.updatedAt || new Date().toISOString()),
           }));
           setLeads(normalized);
         }

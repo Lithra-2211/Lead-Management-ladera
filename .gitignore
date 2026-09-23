@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Dependencies
 node_modules/
 .pnp.*
@@ -34,3 +35,7 @@ yarn-error.log*
 .vscode/
 *.swp
 *.swo
+=======
+node_modules/
+.DS_Store
+>>>>>>> 38c7beb967bd58a508cf6aa2ecaf706aa6e40f0c

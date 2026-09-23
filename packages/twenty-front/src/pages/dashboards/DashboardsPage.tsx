@@ -10,6 +10,11 @@ const PageHeader = styled.div`
   align-items: flex-start;
   padding: 24px 32px 16px;
   width: 100%;
+  
+  @media (max-width: 767px) {
+    flex-direction: column;
+    gap: 12px;
+  }
 `;
 
 const TitleSection = styled.div`
@@ -61,6 +66,11 @@ const Grid = styled.div`
   padding: 0 32px 32px;
   flex: 1;
   overflow-y: auto;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
 `;
 
 const Card = styled.div`

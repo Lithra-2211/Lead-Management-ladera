@@ -7,7 +7,7 @@
  *                              |___/
  */
 
-export { MOBILE_VIEWPORT } from './constants';
+export { MOBILE_VIEWPORT, TABLET_VIEWPORT, DESKTOP_VIEWPORT } from './constants';
 export { getNextThemeColor } from './getNextThemeColor';
 export { themeCssVariables } from './themeCssVariables';
 export type {

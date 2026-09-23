@@ -30,30 +30,28 @@ export type NavigationDrawerProps = {
 };
 
 const StyledAnimatedContainer = styled.div<{
-  isExpanded: boolean;
+  'data-expanded': boolean;
   isResizing: boolean;
 }>`
   height: 100%;
-  max-height: 100%;
-  overflow: hidden;
   position: relative;
   transition: ${({ isResizing }) =>
     isResizing
       ? 'none'
       : `width calc(${themeCssVariables.animation.duration.normal} * 1s)`};
-  width: ${({ isExpanded }) =>
+  width: ${({ 'data-expanded': isExpanded }) =>
     isExpanded
       ? `var(${NAVIGATION_DRAWER_WIDTH_VAR})`
       : `${NAVIGATION_DRAWER_COLLAPSED_WIDTH}px`};
 
   @media (max-width: ${MOBILE_VIEWPORT}px) {
-    width: ${({ isExpanded }) =>
+    width: ${({ 'data-expanded': isExpanded }) =>
       isExpanded ? 'calc(100vw / var(--t-zoom, 1))' : '0'};
   }
 `;
 
 const StyledContainer = styled.div<{
-  isExpanded?: boolean;
+  'data-expanded'?: boolean;
 }>`
   background: #ffffff;
   box-sizing: border-box;
@@ -61,8 +59,8 @@ const StyledContainer = styled.div<{
   flex-direction: column;
   gap: ${themeCssVariables.spacing[4]};
   height: 100%;
-  padding: 24px 16px;
-  width: ${({ isExpanded }) =>
+  padding: ${({ 'data-expanded': isExpanded }) => (isExpanded ? '24px 16px' : '24px 6px')};
+  width: ${({ 'data-expanded': isExpanded }) =>
     isExpanded ? `var(${NAVIGATION_DRAWER_WIDTH_VAR})` : '100%'};
   border-right: 1px solid ${themeCssVariables.border.color.light};
   @media (max-width: ${MOBILE_VIEWPORT}px) {
@@ -119,10 +117,10 @@ export const NavigationDrawer = ({
       <StyledAnimatedContainer
         className={className}
         data-click-outside-id={NAVIGATION_DRAWER_CLICK_OUTSIDE_ID}
-        isExpanded={isExpanded}
+        data-expanded={isExpanded}
         isResizing={isResizing}
       >
-        <StyledContainer isExpanded={isExpanded}>
+        <StyledContainer data-expanded={isExpanded}>
           {!isMobile && isSettingsDrawer && title ? (
             <NavigationDrawerBackButton title={title} />
           ) : (
